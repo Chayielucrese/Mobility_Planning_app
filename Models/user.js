@@ -26,6 +26,7 @@ const user = sequelize.define(
     userCode:{
       type: DataTypes.STRING,
     },
+   
     password: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -37,11 +38,7 @@ const user = sequelize.define(
     accountStatus: {
       type: DataTypes.BOOLEAN,
     },
-    gender: {
-      type: DataTypes.ENUM("male", "female"),
-      allowNull: false,
-      isLowercase:true
-    },
+   
     city: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -72,6 +69,10 @@ const user = sequelize.define(
     },
     CNI: {
       type: DataTypes.STRING,
+    },
+    documentVerified: {
+      type: DataTypes.BOOLEAN,
+      default: false
     },
     vehicleReg:{
       type: DataTypes.STRING,
