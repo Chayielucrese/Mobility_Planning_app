@@ -28,7 +28,7 @@ const sendEmails = async (user_id, email, name, surname) => {
   const mailOptions = {
     from: "apitimetable@gmail.com",
     to: email,
-    subject: "Smart Schedule",
+    subject: "eTravel",
     text: `Hi ${name} ${surname} welcome to eTravel ${localAppInstructions} `,
   };
 

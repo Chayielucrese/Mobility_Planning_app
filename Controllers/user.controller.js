@@ -209,10 +209,11 @@ exports.userLogin = async (req, res) => {
       bcrypt.compareSync(password, user_exist.password)
     ) {
       const token = generateTokenForUSer(user_exist.id, user_exist.role);
-      return res.status(200).json({ success: token });
+      console.log(token, "token");
+      return res.status(200).json({token, msg: "login successful" });
     }
-    return res.status(200).json({
-      success: "invalid password and make sure you activate your account",
+    return res.status(400).json({
+      msg: "invalid password, make sure you activate your account",
     });
   }
 };
