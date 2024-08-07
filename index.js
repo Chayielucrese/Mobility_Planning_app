@@ -27,7 +27,8 @@ app.use(express.static(path.join(__dirname, "client")));
 
 app.use("/api", require("./Routes/role.route.js/index"));
 app.use("/api", require("./Routes/user.routes.js/index"));
-
+app.use("/api", require("./Routes/admin.routes"));
+app.use('/api', require('./Routes/vehicle.routes'))
 const port = 9000 || process.env.port;
 app.listen(9000, () => {
   console.log(`server is listening on port ${port}`);

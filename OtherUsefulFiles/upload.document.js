@@ -12,7 +12,7 @@ const uploadDocument = async (
   vehiclePhoto,
   profileImage
 ) => {
-  console.log(CNI, "CNI Base64 Data");
+ 
   const u = await user.findByPk(id);
   const user_name = u.name;
   console.log(u.id, "user id");
@@ -28,22 +28,39 @@ const uploadDocument = async (
       return false;
     }
     try {
-      const base64Pattern = /^(?:[A-Z0-9+/]{4})*?(?:[A-Z0-9+/]{2}(?:==)?|[A-Z0-9+/]{3}=?)?$/i;
+      const base64Pattern = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}(==)?|[A-Za-z0-9+/]{3}=?)?$/;
       return base64Pattern.test(str);
     } catch (err) {
       return false;
     }
   };
 
+  const correctBase64Format = (base64Data) => {
+    // Check if the data URI prefix is missing and add a default prefix
+    if (!base64Data.startsWith('data:image/')) {
+      base64Data = `data:image/jpeg;base64,${base64Data}`;
+    }
+
+    // Split the data URI and validate the base64 content
+    const parts = base64Data.split(',');
+    if (parts.length === 2 && isValidBase64(parts[1])) {
+      return base64Data;
+    }
+
+    // If the content is invalid, attempt to reformat it
+    const base64Content = parts.pop(); // Get the base64 part
+    if (isValidBase64(base64Content)) {
+      return `${parts.join(',')},${base64Content}`; // Rejoin the valid parts
+    }
+
+    // Return the corrected data URI if possible
+    return base64Data;
+  };
+
   const saveImage = (base64Data, fileName) => {
     return new Promise((resolve, reject) => {
-      // Log the base64 data
-      console.log(`Saving image for ${fileName} with data: ${base64Data.substring(0, 30)}...`);
-
-      // Add prefix if missing
-      if (!base64Data.startsWith('data:image/')) {
-        base64Data = `data:image/jpeg;base64,${base64Data}`;
-      }
+      // Correct the base64 format if invalid
+      base64Data = correctBase64Format(base64Data);
 
       const base64Content = base64Data.split(',')[1];
       if (!isValidBase64(base64Content)) {
@@ -84,8 +101,7 @@ const uploadDocument = async (
       return { status: 400, data: { msg: "Failed to update" } };
     }
 
-    console.log("Update successful", CNIPath, drivingLicensePath, vehiclePhotoPath, profileImagePath);
-    return {
+       return {
       status: 200,
       data: {
         success: "A code has been sent to your email to activate your account",

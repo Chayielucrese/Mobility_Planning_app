@@ -11,22 +11,25 @@ const user = sequelize.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      isLowercase:true
+      isLowercase: true,
     },
     surname: {
       type: DataTypes.STRING,
       allowNull: false,
-      isLowercase:true
+      isLowercase: true,
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      isLowercase:true
+      isLowercase: true,
     },
-    userCode:{
+    userCode: {
       type: DataTypes.STRING,
     },
-   
+accountActive:{
+  type: DataTypes.BOOLEAN,
+  defaultValue:false
+},
     password: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -38,25 +41,27 @@ const user = sequelize.define(
     accountStatus: {
       type: DataTypes.BOOLEAN,
     },
-   
+
     city: {
       type: DataTypes.STRING,
       allowNull: false,
-      isLowercase:true
+      isLowercase: true,
     },
     preferedPaymentMode: {
       type: DataTypes.ENUM("om", "momo", "cash", "wallet"),
-      isLowercase:true
+      isLowercase: true,
     },
     role: {
       type: DataTypes.INTEGER,
       allowNull: false,
-
     },
-    documentStatus: { type: DataTypes.BOOLEAN, defaultValue: false },
+    documentStatus: {
+      type: DataTypes.ENUM("accepted", "rejected", "unverified"),
+      defaultValue: "unverified",
+      isLowercase: true,
+    },
     profileImage: {
       type: DataTypes.STRING,
-      
     },
     walletBalance: {
       type: DataTypes.INTEGER,
@@ -67,17 +72,16 @@ const user = sequelize.define(
         defaultValue: "empty",
       },
     },
+    phone: {
+      type: DataTypes.STRING,
+    },
     CNI: {
       type: DataTypes.STRING,
     },
-    documentVerified: {
-      type: DataTypes.BOOLEAN,
-      default: false
-    },
-    vehicleReg:{
+    vehicleReg: {
       type: DataTypes.STRING,
     },
-    vehiclePhoto:{
+    vehiclePhoto: {
       type: DataTypes.STRING,
     },
     drivingLicense: {

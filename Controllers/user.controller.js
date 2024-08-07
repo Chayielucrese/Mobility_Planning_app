@@ -2,14 +2,18 @@ const { empty } = require("php-in-js/modules/types");
 const Role = require("../Models/role");
 const user = require("../Models/user");
 const validator = require("validator");
-const { where } = require("sequelize");
 const User = require("../Models/user");
 const sendEmails = require("../OtherUsefulFiles/email.sender");
-const { password } = require("../OtherUsefulFiles/email.sender");
 const uploadDocument = require("../OtherUsefulFiles/upload.document");
 const { generateTokenForUSer } = require("../OtherUsefulFiles/token");
 const bcrypt = require("bcrypt");
-const { Op } = require("sequelize");
+const {
+  sendDriverRequestNotification,
+} = require("../OtherUsefulFiles/firebase.admin.not");
+const { Op, where } = require("sequelize");
+const sendDriverEmail = require("../OtherUsefulFiles/drivers.email.sender");
+
+//user functions
 //create user
 exports.createUser = async (req, res) => {
   try {
@@ -24,9 +28,10 @@ exports.createUser = async (req, res) => {
       CNI,
       drivingLicense,
       vehiclePhoto,
-      vehicleReg,
       profileImage,
     } = req.body;
+    const cameroonCode = "237";
+
     if (
       empty(name) ||
       empty(surname) ||
@@ -34,13 +39,15 @@ exports.createUser = async (req, res) => {
       empty(city) ||
       empty(phone) ||
       empty(email) ||
-      empty(role) ||
-      empty(city)
+      empty(role)
     ) {
+      console.log(name, surname, password, phone, email, city);
       return res
         .status(400)
         .json({ msg: "please enter all required fields correctly" });
     }
+    const phonewithcode = cameroonCode + phone;
+    console.log(phonewithcode, "phoneback");
     if (name.length < 2 || surname.length < 2) {
       return res.status(400).json({ msg: "invalid name length" });
     }
@@ -54,9 +61,10 @@ exports.createUser = async (req, res) => {
       console.log(email);
       return res.status(400).json({ msg: "enter a valid email" });
     }
-    if (!validator.isMobilePhone(phone, "fr-CM")) {
-      return res.status(422).json({ msg: "invalid phone number." });
-    }
+    // if (!validator.isMobilePhone(phonewithcode, "fr-CM")) {
+    //   console.log(phone, "phone");
+    //   return res.status(422).json({ msg: "invalid phone number." });
+    // }
 
     const role_exist = await Role.findOne({ where: { id: role } });
     if (!role_exist) {
@@ -82,9 +90,8 @@ exports.createUser = async (req, res) => {
       phone,
     };
 
-    const new_user_id = await user.create(new_user);
-    console.log(role, "role", new_user_id.id, find_role_client.id);
     if (find_role_client.id === parseInt(role)) {
+      const new_user_id = await user.create(new_user);
       await user.update(
         { accountStatus: true },
         { where: { id: new_user_id.id } }
@@ -94,7 +101,9 @@ exports.createUser = async (req, res) => {
       return res.status(201).json({
         msg: "Congratulations! you created your account successfully.",
       });
-    } else if (await Role.findOne({ where: { name: "driver" } })) {
+    } else if (
+      (await Role.findOne({ where: { name: "driver" } })).id === parseInt(role)
+    ) {
       if (
         empty(CNI) ||
         empty(vehiclePhoto) ||
@@ -103,8 +112,14 @@ exports.createUser = async (req, res) => {
       ) {
         return res.status(400).json({ msg: "upload all require document" });
       }
+      const new_driver = await user.create(new_user);
+      await user.update(
+        { accountStatus: true },
+        { where: { id: new_driver.id } }
+      );
 
-      const new_driver = await user.create(new_user, { accountStatus: false });
+      console.log(new_driver.accountStatus, "new-driver");
+
       uploadDocument(
         new_driver.id,
         CNI,
@@ -169,19 +184,22 @@ exports.verifyCode = async (req, res) => {
         { passwordStatus: true },
         { where: { email } }
       );
+
       const eligible_user = await user.findOne({
         where: { [Op.and]: [{ email }, { accountStatus: true }] },
       });
+
       if (password_updated && eligible_user) {
+        await user.update({ accountActive: true }, { where: { email } });
         const token = generateTokenForUSer(find_user.id, find_user.role);
         console.log(token);
         return res
           .status(200)
           .json({ token, msg: "Account activated successfully" });
       } else {
-        return res.status(200).json({
-          msg: "account pending..... waiting for verification",
-        });
+        return res
+          .status(404)
+          .json({ msg: "An Error occured while activating account" });
       }
     } else {
       return res.status(400).json({ msg: "invalid code" });
@@ -210,10 +228,49 @@ exports.userLogin = async (req, res) => {
     ) {
       const token = generateTokenForUSer(user_exist.id, user_exist.role);
       console.log(token, "token");
-      return res.status(200).json({token, msg: "login successful" });
+      return res.status(200).json({ token, msg: "login successful" });
     }
     return res.status(400).json({
       msg: "invalid password, make sure you activate your account",
     });
+  }
+};
+
+//Admin Functions
+//get pending users with role driver
+exports.getAllDriversWithUnverifiedDocuments = async (req, res) => {
+  const role = req.params.role;
+  const admin_role = await Role.findOne({ where: { name: "admin" } });
+  if (admin_role.id === parseInt(role)) {
+    const unverified_drivers = await user.find({
+      where: { documentStatus: "unverified" },
+    });
+    if (empty(unverified_drivers)) {
+      return res.status(200).json({ msg: "no driver for now" });
+    }
+    return res.status(200).json({ msg: unverified_drivers });
+  }
+  return res
+    .status(400)
+    .json({ msg: "your are not eligible to this function" });
+};
+
+//verify and activate user account with role driver
+exports.verifyDocuments = async (req, res) => {
+  const driver_id = req.params.driver_id;
+  const find_user = await user.findOne({ where: { id: driver_id } });
+  if (find_user) {
+    const update_docstatus = await user.update(
+      { documentStatus: true },
+      { where: { id: driver_id } }
+    );
+    if (update_docstatus) {
+      await user.update({ accountStatus: true }, { where: { id: driver_id } });
+      sendDriverEmail(find_user);
+      return res
+        .status(200)
+        .json({ msg: "accountStatus updated successfully" });
+    }
+    return res.status(400).json({ msg: "fail to update document status" });
   }
 };

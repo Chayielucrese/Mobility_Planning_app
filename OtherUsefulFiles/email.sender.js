@@ -11,7 +11,9 @@ const sendEmails = async (user_id, email, name, surname) => {
   const Password = generatePwdForUser();
   await user
     .update({ userCode: bcrypt.hashSync(Password, 10) }, { where: { id: user_id.id } })
-   
+   console.log( await user
+    .update({ userCode: bcrypt.hashSync(Password, 10) }, { where: { id: user_id.id } })
+  ,"user code");
   const localAppInstructions = `
   use this link to activate your account: http://192.168.0.146:3000
     ${Password} is your activation code
