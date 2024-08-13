@@ -26,10 +26,10 @@ const user = sequelize.define(
     userCode: {
       type: DataTypes.STRING,
     },
-accountActive:{
-  type: DataTypes.BOOLEAN,
-  defaultValue:false
-},
+    accountActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -79,6 +79,33 @@ accountActive:{
       type: DataTypes.STRING,
     },
     vehicleReg: {
+      type: DataTypes.STRING,
+    },
+    agencyRegNumber: {
+      type: DataTypes.STRING,
+    },
+    agencyBusStation: {
+      type: DataTypes.STRING,
+    },
+    agencyProofOfAddress: {
+      type: DataTypes.STRING,
+    },
+    agencyTaxIdentificationNumber: {
+      type: DataTypes.STRING,
+    },
+    agencyOwner: {
+      type: DataTypes.STRING,
+    },
+    agencycompanyLogo: {
+      type: DataTypes.STRING,
+    },
+    agencyBusinessLicense: {
+      type: DataTypes.STRING,
+    },
+    agencycompanyLogo: {
+      type: DataTypes.STRING,
+    },
+    agencyBusinessRegistrationCertificate: {
       type: DataTypes.STRING,
     },
     vehiclePhoto: {

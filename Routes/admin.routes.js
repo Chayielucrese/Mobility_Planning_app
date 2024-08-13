@@ -3,6 +3,7 @@ const userCtrl = require("../Controllers/user.controller");
 const router = express.Router();
 const checkAuthorization = require("../Middleware/check.auth");
 const roleAuthorization = require("../Middleware/role.auth");
+const adminCtrl = require('../Controllers/admin.controller')
 const Role = require("../Models/role");
 const User = require("../Models/user");
 
@@ -21,7 +22,7 @@ router.get(
   "/pendingDrivers/:role",
   checkAuthorization,
   roleAuthorization(parseInt(getAdminRole())),
-  userCtrl.getAllDriversWithUnverifiedDocuments
+  adminCtrl.getAllDriversWithUnverifiedDocuments
 );
 
 //verify and activate user account with role driver

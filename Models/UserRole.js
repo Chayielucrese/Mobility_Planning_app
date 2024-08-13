@@ -1,14 +1,21 @@
-// const sequelize = require("../DbConfig/db.connect");
-// const role = require("./role");
-// const user = require("./user");
+const { DataTypes } = require("sequelize");
+const sequelize = require("../DbConfig/db.connect");
 
-// const UserRole = sequelize.define("UserRole",{timestamps: false})
-// // user.belongsToMany(user, {through:UserRole})
-// // role.belongsToMany(role, {through:UserRole})
+const userRole = sequelize.define(
+  "UserRole",
+  {
+    // Add any additional fields here if necessary
+  },
+  { tableName: "user_role" }
+);
 
-// UserRole.sync().then(()=>{
-//     console.log("userrole created successfully");
-// }).catch((err)=>{
-//     console.log("fail to create model", err);
-// })
-// module.exports = UserRole
+userRole
+  .sync()
+  .then(() => {
+    console.log("UserRole model created successfully");
+  })
+  .catch((err) => {
+    console.log("Failed to create UserRole model", err);
+  });
+
+module.exports = userRole;

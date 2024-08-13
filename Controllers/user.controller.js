@@ -26,9 +26,17 @@ exports.createUser = async (req, res) => {
       city,
       phone,
       CNI,
+      agencycompanyLogo,
       drivingLicense,
       vehiclePhoto,
       profileImage,
+      agencyOwner,
+      agencyBusStation,
+      agencyBusinessRegistrationCertificate,
+      agencyTaxIdentificationNumber,
+      agencyProofOfAddress,
+      agencyBusinessLicense,
+      agencyRegNumber,
     } = req.body;
     const cameroonCode = "237";
 
@@ -41,7 +49,7 @@ exports.createUser = async (req, res) => {
       empty(email) ||
       empty(role)
     ) {
-      console.log(name, surname, password, phone, email, city);
+      console.log(name, role, surname, password, phone, email, city);
       return res
         .status(400)
         .json({ msg: "please enter all required fields correctly" });
@@ -61,11 +69,6 @@ exports.createUser = async (req, res) => {
       console.log(email);
       return res.status(400).json({ msg: "enter a valid email" });
     }
-    // if (!validator.isMobilePhone(phonewithcode, "fr-CM")) {
-    //   console.log(phone, "phone");
-    //   return res.status(422).json({ msg: "invalid phone number." });
-    // }
-
     const role_exist = await Role.findOne({ where: { id: role } });
     if (!role_exist) {
       return res.status(400).json({ msg: "role does not exist" });
@@ -136,6 +139,63 @@ exports.createUser = async (req, res) => {
         });
       }
       return res.status(400).json({ msg: "fail to update" });
+    } else if (
+      (await Role.findOne({ where: { name: "agency" } })).id === parseInt(role)
+    ) {
+      if (
+        empty(agencyBusStation) ||
+        empty(agencyRegNumber) ||
+        empty(agencyOwner)
+      ) {
+        return res.status(400).json({ msg: "Fill required fields" });
+      }
+      if (
+        empty(CNI) ||
+        empty(agencyBusinessRegistrationCertificate) ||
+        empty(agencyProofOfAddress) ||
+        empty(agencyTaxIdentificationNumber) ||
+        empty(agencycompanyLogo) ||
+        empty(agencyBusinessLicense)
+      ) {
+        return res.status(400).json({ msg: "upload all require document" });
+      }
+      const new_agency = {
+        agencyBusStation,
+        agencyRegNumber,
+        agencyOwner,
+        city,
+        password: bcrypt.hashSync(password, 10),
+        role,
+        phone,
+      };
+      const new_agence = await user.create(new_user);
+      await user.update(
+        { accountStatus: true },
+        { where: { id: new_agence.id } }
+      );
+
+      console.log(new_agency.accountStatus, "new_agency");
+
+      uploadDocument(
+        new_agency.id,
+        CNI,
+        agencyBusinessRegistrationCertificate,
+        agencyProofOfAddress,
+        agencyTaxIdentificationNumber,
+        agencyBusinessLicense,
+        agencycompanyLogo
+      );
+      if (uploadDocument) {
+        sendEmails(new_agency, email, name, surname);
+
+        return res.status(200).json({
+          success:
+            "A code has been send to your email to activate your account",
+        });
+      }
+      return res.status(400).json({ msg: "fail to update" });
+    }
+    {
     }
   } catch (err) {
     console.log(err);
@@ -192,7 +252,7 @@ exports.verifyCode = async (req, res) => {
       if (password_updated && eligible_user) {
         await user.update({ accountActive: true }, { where: { email } });
         const token = generateTokenForUSer(find_user.id, find_user.role);
-        console.log(token);
+        console.log(token, "active account");
         return res
           .status(200)
           .json({ token, msg: "Account activated successfully" });
@@ -238,22 +298,6 @@ exports.userLogin = async (req, res) => {
 
 //Admin Functions
 //get pending users with role driver
-exports.getAllDriversWithUnverifiedDocuments = async (req, res) => {
-  const role = req.params.role;
-  const admin_role = await Role.findOne({ where: { name: "admin" } });
-  if (admin_role.id === parseInt(role)) {
-    const unverified_drivers = await user.find({
-      where: { documentStatus: "unverified" },
-    });
-    if (empty(unverified_drivers)) {
-      return res.status(200).json({ msg: "no driver for now" });
-    }
-    return res.status(200).json({ msg: unverified_drivers });
-  }
-  return res
-    .status(400)
-    .json({ msg: "your are not eligible to this function" });
-};
 
 //verify and activate user account with role driver
 exports.verifyDocuments = async (req, res) => {

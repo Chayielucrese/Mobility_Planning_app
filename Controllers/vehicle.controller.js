@@ -3,42 +3,70 @@ const Vehicle = require("../Models/vehicle");
 const VehicleOwnerUpload = require("../OtherUsefulFiles/simple.image.upload");
 const { where, Op } = require("sequelize");
 const user = require("../Models/user");
+const { mode } = require("mathjs");
+const uploadDocument = require("../OtherUsefulFiles/upload.document");
 
 exports.createVehicle = async (req, res) => {
   try {
-    const { plateNumber, model, userPhoto, vehicleType } = req.body;
+    const {
+      plateNumber,
+      vehicleModel,
+      vehicleType,
+      vehicleMark,
+      vehicleRegCert,
+      vehicleInsurCert,
+      vehicleRoadWthRep,
+      vehicleSalescert,
+    } = req.body;
     const user = req.user;
 
-    if (empty(plateNumber) || empty(model) || empty(vehicleType)) {
+    if (
+      empty(plateNumber) ||
+      empty(vehicleModel) ||
+      empty(vehicleType) ||
+      empty(vehicleMark) ||
+      empty(vehicleInsurCert) ||
+      empty(vehicleRegCert) ||
+      empty(vehicleRoadWthRep || empty(vehicleSalescert))
+    ) {
       return res.status(400).json({ msg: "fill all required fields" });
     }
-    if (empty(userPhoto)) {
-      return res
-        .status(400)
-        .json({ msg: "please upload a photo of you before submiting" });
-    }
+
     if (!["car", "motobike", "bus"].includes(vehicleType)) {
+      console.log(vehicleType, vehicleModel, "vehicleType");
+
       return res.status(400).json({
         msg: "vehicle must correspond to existing types: car, motobike or bus",
       });
     }
-    const platnum_found = await Vehicle.findOne({ where: { plateNumber } });
-    if (platnum_found) {
-      return res.status(409).json({ msg: "This Vehicle already exist" });
-    } else {
-      const create_new_cab = await Vehicle.create({
-        plateNumber,
-        vehicleType,
-        vehicleModel: model,
-        owner: user.id,
-      });
-      if (!create_new_cab) {
-        return res
-          .status(400)
-          .json({ msg: "an error occured while adding vehicle" });
+    if (!(await Vehicle.findOne({ where: { owner: user.id } }))) {
+      const platnum_found = await Vehicle.findOne({ where: { plateNumber } });
+      if (platnum_found) {
+        return res.status(409).json({ msg: "This Vehicle already exist" });
+      } else {
+        const create_new_cab = await Vehicle.create({
+          plateNumber,
+          vehicleType: vehicleType,
+          vehicleModel,
+          owner: user.id,
+          vehicleMark,
+        });
+        if (!create_new_cab) {
+          return res
+            .status(400)
+            .json({ msg: "an error occured while adding vehicle" });
+        }
+        VehicleOwnerUpload(
+          user,
+          vehicleInsurCert,
+          vehicleSalescert,
+          vehicleRoadWthRep,
+          vehicleRegCert
+        );
+        return res.status(201).json({ msg: "You Added a vehicle" });
       }
-      VehicleOwnerUpload(userPhoto, user);
-      return res.status(201).json({ msg: "vehicle created successfully" });
+    } else {
+      return res.status(201).json({ msg: "You already have a vehicle" });
     }
   } catch (err) {
     console.log(err);
@@ -70,13 +98,15 @@ exports.viewVehicleDetails = async (req, res) => {
 //view all existing vehicles
 exports.getAllVehicles = async (req, res) => {
   const user = req.user;
-  const gell_all_his_cabs = await Vehicle.findAll({
+  const get_all_his_cabs = await Vehicle.findAll({
     where: { owner: user.id },
   });
-  if (empty(gell_all_his_cabs)) {
-    return res.status(200).json({ msg: "No vehicle found" });
+  if (empty(get_all_his_cabs)) {
+    return res.status(200).json({ msg: get_all_his_cabs });
   }
-  return res.status(200).json({ msg: gell_all_his_cabs });
+  console.log(get_all_his_cabs, "get_all_his_cabs");
+
+  return res.status(200).json({ msg: get_all_his_cabs });
 };
 
 //delete vehicle by id
