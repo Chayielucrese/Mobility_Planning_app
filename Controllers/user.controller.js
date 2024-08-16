@@ -5,6 +5,8 @@ const validator = require("validator");
 const User = require("../Models/user");
 const sendEmails = require("../OtherUsefulFiles/email.sender");
 const uploadDocument = require("../OtherUsefulFiles/upload.document");
+const ProfileUpload = require("../OtherUsefulFiles/profile.upload");
+
 const { generateTokenForUSer } = require("../OtherUsefulFiles/token");
 const bcrypt = require("bcrypt");
 const {
@@ -317,4 +319,73 @@ exports.verifyDocuments = async (req, res) => {
     }
     return res.status(400).json({ msg: "fail to update document status" });
   }
+};
+
+exports.editProfile = async (req, res) => {
+  const userObj = req.user;
+  const { profileImage, email, phone, password } = req.body;
+
+  if (empty(password)) {
+    return res.status(400).json({ msg: " your password is required " });
+  } else {
+    const verify_password = await user.findOne({
+      where: { password: bcrypt.compare(password, userObj.password) },
+    });
+    if (verify_password) {
+      if (empty(profileImage) && empty(email) && empty(phone)) {
+        return res
+          .status(400)
+          .json({ msg: "You are required to fill at least a field." });
+      }
+
+      if (!empty(phone) || !empty(email)) {
+        const existingUser = await user.constructor.findOne({
+          where: {
+            [Op.or]: [{ phone }, { email }],
+            id: { [Op.ne]: userObj.id },
+          },
+        });
+
+        if (existingUser) {
+          return res
+            .status(400)
+            .json({ msg: "Phone or email already exists." });
+        }
+      }
+
+      const fieldsToUpdate = {};
+
+      if (!empty(profileImage)) ProfileUpload(profileImage);
+      if (!empty(email)) fieldsToUpdate.email = email;
+      if (!empty(phone)) fieldsToUpdate.phone = phone;
+
+      await user.update(fieldsToUpdate, { where: { id: user.id } });
+
+      return res.status(200).json({ msg: "Update successful." });
+    }
+    return res.status(404).json({ msg: "Incorrect Password" });
+  }
+};
+
+//driver view all upload documents
+
+exports.viewUploadedDocuments = async (req, res) => {
+  const userObj = req.user;
+
+  const user_docs = await user.findOne(
+    { where: { id: userObj.id } },
+    { attributes: { drivingLicense, CNI } }
+  );
+  const user_vehicle_docs = await user.findOne(
+    { where: { id: userObj.js } },
+    {
+      attributes: {
+        vehicleRegistrationCertificate,
+        vehicleSalesCertificate,
+        vehicleRoadWorthinessReport,
+        vehicleRegistrationCertificate,
+      },
+    }
+  );
+  return res.status(200).json({ msg: user_docs, user_vehicle_docs });
 };

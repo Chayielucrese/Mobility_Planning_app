@@ -1,21 +1,21 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../DbConfig/db.connect");
-const user = require("./user");
-// const UserRole = require("./userRole");
 
-const role = sequelize.define(
-  "role",
+// Define the Role model
+const Role = sequelize.define(
+  "Role",
   {
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      isLowercase:true
+      isLowercase: true,
     },
   },
   { tableName: "role" }
 );
-// role.belongsToMany(user, {as:"role",through: "UserRole" });
-role
+
+
+Role
   .sync()
   .then(() => {
     console.log("role created successfully");
@@ -23,4 +23,5 @@ role
   .catch((err) => {
     console.log("fail to create model", err);
   });
-module.exports = role;
+
+module.exports = Role;

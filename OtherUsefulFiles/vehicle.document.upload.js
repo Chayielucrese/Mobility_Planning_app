@@ -5,7 +5,13 @@ const base64Img = require("base64-img");
 const path = require("path");
 const fs = require("fs");
 
-const VehicleOwnerUpload = async (userPhoto, user) => {
+const VehicleOwnerUpload = async (
+  user,
+  vehicleInsurCert,
+  vehicleRoadWthRep,
+  vehicleRegCert,
+  vehicleSalescert
+) => {
   const user_name = user.name;
   const user_surname = user.surname;
 
@@ -71,13 +77,24 @@ const VehicleOwnerUpload = async (userPhoto, user) => {
   };
 
   try {
-    const [userPhotoPath] = await Promise.all([
-      saveImage(userPhoto, `${user_name} ${user_surname} Vehicle`),
+    const [
+      vehicleInsurCertPath,
+      vehicleRegCertPath,
+      vehicleRoadWthRepPath,
+      vehicleSalescertPath,
+    ] = await Promise.all([
+      saveImage(vehicleRoadWthRep, `${user_name} ${user_surname} Vehicle`),
+      saveImage(vehicleRegCert, `${user_name} ${user_surname} Vehicle`),
+      saveImage(vehicleInsurCert, `${user_name} ${user_surname} Vehicle`),
+      saveImage(vehicleSalescert, `${user_name} ${user_surname} Vehicle`),
     ]);
 
     const was_updated = await Vehicle.update(
       {
-        userPhoto: userPhotoPath,
+        vehicleRegistrationCertificate: vehicleRegCertPath,
+        vehicleInsuranceCertificate: vehicleInsurCertPath,
+        vehicleSalesCertificate: vehicleSalescertPath,
+        vehicleRoadWorthinessReport: vehicleRoadWthRepPath,
       },
       {
         where: { owner: user.id },

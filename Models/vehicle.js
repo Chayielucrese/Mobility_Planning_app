@@ -45,7 +45,7 @@ const vehicle = sequelize.define(
     },
     vehicleMark: {
       type: DataTypes.STRING,
-      allowNull: false,
+      isLowercase: true,
     },
     //in other words vehicle category it could be a car, bike or bus
     vehicleType: {
@@ -55,19 +55,24 @@ const vehicle = sequelize.define(
     },
     vehicleRegistrationCertificate: {
       type: DataTypes.STRING,
-      allowNull: false,
+      isLowercase: true,
     },
     vehicleInsuranceCertificate: {
       type: DataTypes.STRING,
-      allowNull: false,
+      isLowercase: true,
     },
     vehicleSalesCertificate: {
       type: DataTypes.STRING,
-      allowNull: false,
+      isLowercase: true,
     },
     vehicleRoadWorthinessReport: {
       type: DataTypes.STRING,
-      allowNull: false,
+   
+      isLowercase: true,
+    },
+    bikeFitnessCertificate: {
+      type: DataTypes.STRING,
+      isLowercase: true,
     },
   },
   { tableName: "vehicle" }

@@ -1,6 +1,6 @@
 const { empty } = require("php-in-js/modules/types");
 const Vehicle = require("../Models/vehicle");
-const VehicleOwnerUpload = require("../OtherUsefulFiles/simple.image.upload");
+const VehicleOwnerUpload = require("../OtherUsefulFiles/vehicle.document.upload");
 const { where, Op } = require("sequelize");
 const user = require("../Models/user");
 const { mode } = require("mathjs");
@@ -29,6 +29,8 @@ exports.createVehicle = async (req, res) => {
       empty(vehicleRegCert) ||
       empty(vehicleRoadWthRep || empty(vehicleSalescert))
     ) {
+      console.log("vehicleMark", vehicleMark);
+
       return res.status(400).json({ msg: "fill all required fields" });
     }
 
@@ -87,7 +89,7 @@ exports.viewVehicleDetails = async (req, res) => {
   return res.status(200).json({
     msg: {
       owner: get_vehicle.owner,
-      userPhoto: get_vehicle.userPhoto,
+      vehicleMark: get_vehicle.vehicleMark,
       plateNumber: get_vehicle.plateNumber,
       vehicleModel: get_vehicle.model,
       vehicleType: get_vehicle.vehicleType,
@@ -105,6 +107,7 @@ exports.getAllVehicles = async (req, res) => {
     return res.status(200).json({ msg: get_all_his_cabs });
   }
   console.log(get_all_his_cabs, "get_all_his_cabs");
+  console.log("all vehicles", get_all_his_cabs);
 
   return res.status(200).json({ msg: get_all_his_cabs });
 };
@@ -122,3 +125,6 @@ exports.deleteVehicle = async (req, res) => {
   }
   return res.status(200).json({ msg: "no vehicle matches you" });
 };
+
+//edit profile
+

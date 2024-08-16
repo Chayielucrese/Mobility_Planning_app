@@ -1,11 +1,8 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../DbConfig/db.connect");
-const role = require("./role");
-const { key } = require("php-in-js/modules/array");
-const { isLowercase } = require("validator");
-// const UserRole = require("./userRole");
 
-const user = sequelize.define(
+// Define the User model
+const User = sequelize.define(
   "User",
   {
     name: {
@@ -41,7 +38,6 @@ const user = sequelize.define(
     accountStatus: {
       type: DataTypes.BOOLEAN,
     },
-
     city: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -50,10 +46,6 @@ const user = sequelize.define(
     preferedPaymentMode: {
       type: DataTypes.ENUM("om", "momo", "cash", "wallet"),
       isLowercase: true,
-    },
-    role: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
     },
     documentStatus: {
       type: DataTypes.ENUM("accepted", "rejected", "unverified"),
@@ -65,12 +57,7 @@ const user = sequelize.define(
     },
     walletBalance: {
       type: DataTypes.INTEGER,
-
       defaultValue: 0,
-      walletStatus: {
-        type: DataTypes.STRING,
-        defaultValue: "empty",
-      },
     },
     phone: {
       type: DataTypes.STRING,
@@ -102,9 +89,6 @@ const user = sequelize.define(
     agencyBusinessLicense: {
       type: DataTypes.STRING,
     },
-    agencycompanyLogo: {
-      type: DataTypes.STRING,
-    },
     agencyBusinessRegistrationCertificate: {
       type: DataTypes.STRING,
     },
@@ -133,14 +117,13 @@ const user = sequelize.define(
   { tableName: "user" }
 );
 
-// user.belongsToMany(user, { as: "user", through: "UserRole" });
-
-user
+User
   .sync()
-  .then((result) => {
-    console.log("model created sccessfully");
+  .then(() => {
+    console.log("role created successfully");
   })
   .catch((err) => {
     console.log("fail to create model", err);
   });
-module.exports = user;
+
+module.exports = User;
