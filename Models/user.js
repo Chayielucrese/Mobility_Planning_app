@@ -62,6 +62,10 @@ const User = sequelize.define(
     phone: {
       type: DataTypes.STRING,
     },
+    role: {
+      type: DataTypes.INTEGER,
+      allowNull:false
+    },
     CNI: {
       type: DataTypes.STRING,
     },

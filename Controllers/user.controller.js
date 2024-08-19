@@ -85,6 +85,7 @@ exports.createUser = async (req, res) => {
       return res.status(409).json({ msg: "you already exist" });
     }
     const find_role_client = await Role.findOne({ where: { name: "client" } });
+    const find_role_admin = await Role.findOne({where:{name:"admin"}})
     const new_user = {
       name,
       surname,
@@ -95,7 +96,7 @@ exports.createUser = async (req, res) => {
       phone,
     };
 
-    if (find_role_client.id === parseInt(role)) {
+    if (find_role_client.id === parseInt(role) || find_role_admin.id === parseInt(role)) {
       const new_user_id = await user.create(new_user);
       await user.update(
         { accountStatus: true },

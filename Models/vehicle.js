@@ -74,6 +74,11 @@ const vehicle = sequelize.define(
       type: DataTypes.STRING,
       isLowercase: true,
     },
+    Availability: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+      isLowercase: true,
+    },
   },
   { tableName: "vehicle" }
 );

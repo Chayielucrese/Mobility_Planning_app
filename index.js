@@ -38,6 +38,8 @@ app.use("/api", require("./Routes/user.routes.js/index"));
 app.use("/api", require("./Routes/admin.routes"));
 app.use('/api', require('./Routes/vehicle.routes'))
 app.use('/api', require('./Routes/statistics.routes'));
+app.use('/api', require('./Routes/ride.routes'));
+
 const port = 9000 || process.env.port;
 app.listen(9000, () => {
   console.log(`server is listening on port ${port}`);
