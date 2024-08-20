@@ -1,6 +1,6 @@
-const User = require('./Models/user');
-const Role = require('./Models/role');
-const UserRole = require("./userRole");
+const User = require('../Models/user');
+const Role = require('../Models/role');
+const UserRole = require("../Models/userRole");
 
 // Define many-to-many relationships
 User.belongsToMany(Role, { through: UserRole, as: 'roles', foreignKey: 'userId' });

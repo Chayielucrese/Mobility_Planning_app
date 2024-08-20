@@ -11,7 +11,7 @@ const Role = sequelize.define(
       isLowercase: true,
     },
   },
-  { tableName: "role" }
+
 );
 
 

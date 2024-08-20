@@ -17,7 +17,7 @@ const Ride = sequelize.define(
       isLowercase: true,
     },
   },
-  { tableName: "ride" }
+
 );
 
 Ride.sync()

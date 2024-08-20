@@ -324,7 +324,7 @@ exports.verifyDocuments = async (req, res) => {
 
 exports.editProfile = async (req, res) => {
   const userObj = req.user;
-  const { profileImage, email, phone, password } = req.body;
+  const { profileImage, email, phone, password,city, } = req.body;
 
   if (empty(password)) {
     return res.status(400).json({ msg: " your password is required " });
@@ -333,7 +333,7 @@ exports.editProfile = async (req, res) => {
       where: { password: bcrypt.compare(password, userObj.password) },
     });
     if (verify_password) {
-      if (empty(profileImage) && empty(email) && empty(phone)) {
+      if (empty(profileImage) && empty(email) && empty(phone)&& empty(city)) {
         return res
           .status(400)
           .json({ msg: "You are required to fill at least a field." });
@@ -359,6 +359,7 @@ exports.editProfile = async (req, res) => {
       if (!empty(profileImage)) ProfileUpload(profileImage);
       if (!empty(email)) fieldsToUpdate.email = email;
       if (!empty(phone)) fieldsToUpdate.phone = phone;
+      if(!empty(city)) fieldsToUpdate.city = city
 
       await user.update(fieldsToUpdate, { where: { id: user.id } });
 

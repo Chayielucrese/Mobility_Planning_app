@@ -118,7 +118,7 @@ const User = sequelize.define(
       type: DataTypes.DECIMAL,
     },
   },
-  { tableName: "user" }
+
 );
 
 User
