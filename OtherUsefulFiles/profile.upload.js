@@ -5,7 +5,7 @@ const base64Img = require("base64-img");
 const path = require("path");
 const fs = require("fs");
 
-const ProfileUpload = async (user, imageProfile) => {
+const ProfileUpload = async (user, profileImage) => {
   const user_name = user.name;
   const user_surname = user.surname;
 
@@ -29,7 +29,7 @@ const ProfileUpload = async (user, imageProfile) => {
   };
 
   const correctBase64Format = (base64Data) => {
-    // Check if the data URI prefix is missing and add a default prefix
+
     if (!base64Data.startsWith("data:image/")) {
       base64Data = `data:image/jpeg;base64,${base64Data}`;
     }
@@ -52,7 +52,7 @@ const ProfileUpload = async (user, imageProfile) => {
 
   const saveImage = (base64Data, fileName) => {
     return new Promise((resolve, reject) => {
-      // Correct the base64 format if invalid
+    
       base64Data = correctBase64Format(base64Data);
 
       const base64Content = base64Data.split(",")[1];
@@ -72,15 +72,15 @@ const ProfileUpload = async (user, imageProfile) => {
 
   try {
     const [imageProfilePath] = await Promise.all([
-      saveImage(imageProfile, `${user_name} ${user_surname} profile`),
+      saveImage(profileImage, `${user_name} ${user_surname} profile`),
     ]);
 
     const was_updated = await User.update(
       {
-        profileImage: imageProfilePath,
+        profileImage: imageProfilePath.split('profileImages')[1],
       },
       {
-        where: { owner: user.id },
+        where: { id: user.id },
       }
     );
 

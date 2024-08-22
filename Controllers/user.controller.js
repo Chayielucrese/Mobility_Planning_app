@@ -1,6 +1,7 @@
 const { empty } = require("php-in-js/modules/types");
 const Role = require("../Models/role");
 const user = require("../Models/user");
+const Vehicle = require("../Models/vehicle");
 const validator = require("validator");
 const User = require("../Models/user");
 const sendEmails = require("../OtherUsefulFiles/email.sender");
@@ -14,6 +15,7 @@ const {
 } = require("../OtherUsefulFiles/firebase.admin.not");
 const { Op, where } = require("sequelize");
 const sendDriverEmail = require("../OtherUsefulFiles/drivers.email.sender");
+const UploadProfile = require("../OtherUsefulFiles/upload.document");
 
 //user functions
 //create user
@@ -81,11 +83,15 @@ exports.createUser = async (req, res) => {
       },
     });
     console.log(user_exist, "user_exist");
+
     if (user_exist) {
       return res.status(409).json({ msg: "you already exist" });
     }
+    if (await user.findOne({ where: { phone } })) {
+      return res.status(409).json({ msg: "phone number already exist" });
+    }
     const find_role_client = await Role.findOne({ where: { name: "client" } });
-    const find_role_admin = await Role.findOne({where:{name:"admin"}})
+    const find_role_admin = await Role.findOne({ where: { name: "admin" } });
     const new_user = {
       name,
       surname,
@@ -96,7 +102,10 @@ exports.createUser = async (req, res) => {
       phone,
     };
 
-    if (find_role_client.id === parseInt(role) || find_role_admin.id === parseInt(role)) {
+    if (
+      find_role_client.id === parseInt(role) ||
+      find_role_admin.id === parseInt(role)
+    ) {
       const new_user_id = await user.create(new_user);
       await user.update(
         { accountStatus: true },
@@ -308,11 +317,14 @@ exports.verifyDocuments = async (req, res) => {
   const find_user = await user.findOne({ where: { id: driver_id } });
   if (find_user) {
     const update_docstatus = await user.update(
-      { documentStatus: true },
+      { documentStatus: "approved" },
       { where: { id: driver_id } }
     );
     if (update_docstatus) {
-      await user.update({ accountStatus: true }, { where: { id: driver_id } });
+      await user.update(
+        { accountStatus: true, availability: true },
+        { where: { id: driver_id } }
+      );
       sendDriverEmail(find_user);
       return res
         .status(200)
@@ -324,49 +336,43 @@ exports.verifyDocuments = async (req, res) => {
 
 exports.editProfile = async (req, res) => {
   const userObj = req.user;
-  const { profileImage, email, phone, password,city, } = req.body;
-
+  const { profileImage, email, phone, password, city } = req.body;
   if (empty(password)) {
-    return res.status(400).json({ msg: " your password is required " });
-  } else {
-    const verify_password = await user.findOne({
-      where: { password: bcrypt.compare(password, userObj.password) },
-    });
-    if (verify_password) {
-      if (empty(profileImage) && empty(email) && empty(phone)&& empty(city)) {
-        return res
-          .status(400)
-          .json({ msg: "You are required to fill at least a field." });
-      }
-
-      if (!empty(phone) || !empty(email)) {
-        const existingUser = await user.constructor.findOne({
-          where: {
-            [Op.or]: [{ phone }, { email }],
-            id: { [Op.ne]: userObj.id },
-          },
-        });
-
-        if (existingUser) {
-          return res
-            .status(400)
-            .json({ msg: "Phone or email already exists." });
-        }
-      }
-
-      const fieldsToUpdate = {};
-
-      if (!empty(profileImage)) ProfileUpload(profileImage);
-      if (!empty(email)) fieldsToUpdate.email = email;
-      if (!empty(phone)) fieldsToUpdate.phone = phone;
-      if(!empty(city)) fieldsToUpdate.city = city
-
-      await user.update(fieldsToUpdate, { where: { id: user.id } });
-
-      return res.status(200).json({ msg: "Update successful." });
-    }
+    return res.status(400).json({ msg: "Your password is required." });
+  }
+  const isPasswordCorrect = await bcrypt.compare(password, userObj.password);
+  if (!isPasswordCorrect) {
     return res.status(404).json({ msg: "Incorrect Password" });
   }
+  if (empty(profileImage) && empty(email) && empty(phone) && empty(city)) {
+    return res
+      .status(400)
+      .json({ msg: "You are required to fill at least one field." });
+  }
+  if (!empty(phone) || !empty(email)) {
+    const existingUser = await user.findOne({
+      where: {
+        [Op.or]: [{ phone }, { email }],
+        id: { [Op.ne]: userObj.id },
+      },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ msg: "Phone or email already exists." });
+    }
+  }
+  const fieldsToUpdate = {};
+
+  if (!empty(profileImage)) {
+    ProfileUpload(userObj, profileImage);
+  }
+  if (!empty(email)) fieldsToUpdate.email = email;
+  if (!empty(phone)) fieldsToUpdate.phone = phone;
+  if (!empty(city)) fieldsToUpdate.city = city;
+
+  await user.update(fieldsToUpdate, { where: { id: userObj.id } });
+
+  return res.status(200).json({ msg: "Update successful." });
 };
 
 //driver view all upload documents
@@ -376,18 +382,54 @@ exports.viewUploadedDocuments = async (req, res) => {
 
   const user_docs = await user.findOne(
     { where: { id: userObj.id } },
-    { attributes: { drivingLicense, CNI } }
+    { attributes: ["drivingLicense", "CNI", "vehiclePhoto", "vehicleReg"] }
   );
-  const user_vehicle_docs = await user.findOne(
-    { where: { id: userObj.js } },
+  const user_vehicle_docs = await Vehicle.findOne(
+    { where: { id: userObj.id } },
     {
-      attributes: {
-        vehicleRegistrationCertificate,
-        vehicleSalesCertificate,
-        vehicleRoadWorthinessReport,
-        vehicleRegistrationCertificate,
-      },
+      attributes: [
+        "vehicleRegistrationCertificate",
+        "vehicleSalesCertificate",
+        "vehicleRoadWorthinessReport",
+        "vehicleInsuranceCertificate",
+      ],
     }
   );
-  return res.status(200).json({ msg: user_docs, user_vehicle_docs });
+  return res.status(200).json({
+    msg: {
+      vehiclePhoto: user_docs.vehiclePhoto,
+      vehicleReg: user_docs.vehicleReg,
+      CNI: user_docs.CNI,
+      drivingLicense: user_docs.drivingLicense,
+      // vehicleRegistrationCertificate:
+      //   user_vehicle_docs.vehicleRegistrationCertificate,
+      // vehicleSalesCertificate: user_vehicle_docs.vehicleSalesCertificate,
+      // vehicleRoadWorthinessReport:
+      //   user_vehicle_docs.vehicleRoadWorthinessReport,
+      // vehicleInsuranceCertificate:
+      //   user_vehicle_docs.vehicleInsuranceCertificate,
+    },
+  
+  });
+};
+
+//get profileImage
+
+exports.getUserProfile = async (req, res) => {
+  const userObj = req.user;
+
+  const get_user_details = await user.findOne({
+    where: { id: userObj.id },
+    attributes: ["email", "phone", "city", "name", "surname", "profileImage"],
+  });
+  return res.status(200).json({
+    msg: {
+      name: get_user_details.name,
+      email: get_user_details.email,
+      phone: get_user_details.phone,
+      city: get_user_details.city,
+      profileImage: get_user_details.profileImage,
+      surname: get_user_details.surname,
+    },
+  });
 };

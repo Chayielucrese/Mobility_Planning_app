@@ -1,19 +1,29 @@
 const express = require("express");
 const router = express.Router();
 const userCtrl = require("../../Controllers/user.controller");
-const checkAuthorization = require('../../Middleware/check.auth')
+const checkAuthorization = require("../../Middleware/check.auth");
 //create user
 router.post("/createUser", userCtrl.createUser);
 
 //delete user by id
-router.delete('/deleteById/:user_id', userCtrl.deleteUserById)
+router.delete("/deleteById/:user_id", userCtrl.deleteUserById);
 
 //login user
-router.post('/userLogin', userCtrl.userLogin)
+router.post("/userLogin", userCtrl.userLogin);
 
 //activate account
-router.put('/activateAccount', userCtrl.verifyCode)
+router.put("/activateAccount", userCtrl.verifyCode);
 
 //profile update
-router.put('/editProfile',  checkAuthorization, userCtrl.editProfile)
+router.put("/editProfile", checkAuthorization, userCtrl.editProfile);
+
+//get user profile
+router.get("/getUserProfile", checkAuthorization, userCtrl.getUserProfile);
+
+//view all uploaded documents
+router.get(
+  "/viewUploadedDocuments",
+  checkAuthorization,
+  userCtrl.viewUploadedDocuments
+);
 module.exports = router;

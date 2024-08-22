@@ -83,18 +83,18 @@ const VehicleOwnerUpload = async (
       vehicleRoadWthRepPath,
       vehicleSalescertPath,
     ] = await Promise.all([
-      saveImage(vehicleRoadWthRep, `${user_name} ${user_surname} Vehicle`),
-      saveImage(vehicleRegCert, `${user_name} ${user_surname} Vehicle`),
-      saveImage(vehicleInsurCert, `${user_name} ${user_surname} Vehicle`),
-      saveImage(vehicleSalescert, `${user_name} ${user_surname} Vehicle`),
+      saveImage(vehicleRoadWthRep, `${user_name} ${user_surname} VehicleRegistrationworthinessreport`),
+      saveImage(vehicleRegCert, `${user_name} ${user_surname} VehicleRegistrationcertificate`),
+      saveImage(vehicleInsurCert, `${user_name} ${user_surname} VehicleInsurancecertificate`),
+      saveImage(vehicleSalescert, `${user_name} ${user_surname} VehicleSalescertificate`),
     ]);
 
     const was_updated = await Vehicle.update(
       {
-        vehicleRegistrationCertificate: vehicleRegCertPath,
-        vehicleInsuranceCertificate: vehicleInsurCertPath,
-        vehicleSalesCertificate: vehicleSalescertPath,
-        vehicleRoadWorthinessReport: vehicleRoadWthRepPath,
+        vehicleRegistrationCertificate: vehicleRegCertPath.split("Vehicles")[1],
+        vehicleInsuranceCertificate: vehicleInsurCertPath.split("Vehicles")[1],
+        vehicleSalesCertificate: vehicleSalescertPath.split("Vehicles")[1],
+        vehicleRoadWorthinessReport: vehicleRoadWthRepPath.split("Vehicles")[1],
       },
       {
         where: { owner: user.id },

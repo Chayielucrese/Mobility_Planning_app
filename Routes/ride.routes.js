@@ -13,7 +13,7 @@ async function getRole () {
     
     }
 
-router.post('/createRide', checkAuthorization, adminRole(4), rideCtrl.createRide )
+router.post('/createRide', checkAuthorization, adminRole(1), rideCtrl.createRide )
 
 router.get('/getRides', checkAuthorization, rideCtrl.getRides)
 

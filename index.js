@@ -13,6 +13,9 @@ app.use(
     limit: "50mb",
   })
 );
+app.use('/profileImages', express.static(path.join(__dirname, "profileImages")))
+app.use('/Vehicles', express.static(path.join(__dirname, "Vehicles")))
+app.use('/Uploads', express.static(path.join(__dirname, "Uploads")))
 app.use(
   express.json({
     verify: (req, res, buf) => {
@@ -39,6 +42,8 @@ app.use("/api", require("./Routes/admin.routes"));
 app.use('/api', require('./Routes/vehicle.routes'))
 app.use('/api', require('./Routes/statistics.routes'));
 app.use('/api', require('./Routes/ride.routes'));
+app.use('/api', require('./Routes/driver.routes'));
+
 
 const port = 9000 || process.env.port;
 app.listen(9000, () => {

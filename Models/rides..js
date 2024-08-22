@@ -9,7 +9,7 @@ const Ride = sequelize.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      isLowercase: true,
+      isLowercase: false,
     },
     description: {
       type: DataTypes.STRING,

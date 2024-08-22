@@ -55,30 +55,53 @@ const vehicle = sequelize.define(
     },
     vehicleRegistrationCertificate: {
       type: DataTypes.STRING,
+      get() {
+        const rawValue = this.getDataValue("vehicleRegistrationCertificate");
+        return rawValue
+          ? "http://192.168.137.1:9000/Vehicles" + rawValue.replace("\\", "/")
+          : null;
+      },
       isLowercase: true,
     },
     vehicleInsuranceCertificate: {
       type: DataTypes.STRING,
+      get() {
+        const rawValue = this.getDataValue("vehicleInsuranceCertificate");
+        return rawValue
+          ? "http://192.168.137.1:9000/Vehicles" + rawValue.replace("\\", "/")
+          : null;
+      },
       isLowercase: true,
     },
     vehicleSalesCertificate: {
       type: DataTypes.STRING,
+      get() {
+        const rawValue = this.getDataValue("vehicleSalesCertificate");
+        return rawValue
+          ? "http://192.168.137.1:9000/Vehicles" + rawValue.replace("\\", "/")
+          : null;
+      },
       isLowercase: true,
     },
     vehicleRoadWorthinessReport: {
       type: DataTypes.STRING,
-   
+      get() {
+        const rawValue = this.getDataValue("vehicleRoadWorthinessReport");
+        return rawValue
+          ? "http://192.168.137.1:9000/Vehicles" + rawValue.replace("\\", "/")
+          : null;
+      },
       isLowercase: true,
     },
     bikeFitnessCertificate: {
       type: DataTypes.STRING,
       isLowercase: true,
     },
-    Availability: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-      isLowercase: true,
-    },
+    // Availability: {
+    //   type: DataTypes.BOOLEAN,
+    //   defaultValue: true,
+    //   isLowercase: true,
+    // },
   },
   { tableName: "vehicle" }
 );
