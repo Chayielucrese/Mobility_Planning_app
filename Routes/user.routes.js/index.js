@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const userCtrl = require("../../Controllers/user.controller");
 const checkAuthorization = require("../../Middleware/check.auth");
+const reservationTypeCtrl = require("../../Controllers/reservationtypes.controller");
+const geoapifyCtrl = require("../../Geolocation/index");
 //create user
 router.post("/createUser", userCtrl.createUser);
 
@@ -26,4 +28,14 @@ router.get(
   checkAuthorization,
   userCtrl.viewUploadedDocuments
 );
+
+//view reservation types
+router.get(
+  "/getAllReservationTtypes",
+  checkAuthorization,
+  reservationTypeCtrl.getAllReservationTypes
+);
+
+//get places
+router.get("/getPlaces",checkAuthorization, geoapifyCtrl.getPlaces);
 module.exports = router;

@@ -1,15 +1,16 @@
 const { Timestamp } = require("firebase-admin/firestore");
-const { Sequelize, DataTypes, TIME } = require("sequelize");
+const { Sequelize, DataTypes, TIME, FLOAT } = require("sequelize");
 
 const Reservation = Sequelize.afterDefine("Reservation", {
   bookingStatus: { type: DataTypes.BOOLEAN, defaultValue: false },
   bookingTotalCost: { type: DataTypes.FLOAT },
-  reservationType:{type: DataTypes.ENUM("advance", "instant"),},
+  reservationType: { type: DataTypes.ENUM("advance", "instant") },
   userId: { type: DataTypes.INTEGER, allowNull: false },
   paymentStatus: { type: DataTypes.BOOLEAN, defaultValue: false },
-  paymentMode: { type: DataTypes.STRING, allowNull: false },
+  paymentMode: { type: DataTypes.ENUM("wallet", "cash"), allowNull: false , defaultValue: "wallet"},
   bookingDate: { type: DataTypes.DATE },
   bookingTime: { type: TIME },
+  bookingTotalCost: { type: FLOAT },
 });
 
 Reservation.sync()

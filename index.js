@@ -3,7 +3,7 @@ const app = express();
 const bodyparser = require("body-parser");
 const sequelize = require("./DbConfig/db.connect");
 const path = require("path");
-// const cors = require('cors');
+const cors = require('cors');',,,,,,,,,,,,,,,,,'
 //importing my database connection
 require("./DbConfig/db.connect");
 
@@ -25,12 +25,12 @@ app.use(
   })
 );
 
-// app.use(cors({
-//   origin: "http://192.168.137.1:9000/api'",
-//   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-//   allowedHeaders: "Authorization, Content-Type",
-//   credentials: true,
-// }));
+app.use(cors({
+  origin: "*",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: "Authorization, Content-Type",
+  credentials: true,
+}));
 
 
 //dealing with static files
@@ -43,6 +43,8 @@ app.use('/api', require('./Routes/vehicle.routes'))
 app.use('/api', require('./Routes/statistics.routes'));
 app.use('/api', require('./Routes/ride.routes'));
 app.use('/api', require('./Routes/driver.routes'));
+app.use('/api', require('./Routes/wallet.routes'));
+
 
 
 const port = 9000 || process.env.port;

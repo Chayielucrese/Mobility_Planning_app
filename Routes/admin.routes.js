@@ -3,8 +3,9 @@ const userCtrl = require("../Controllers/user.controller");
 const router = express.Router();
 const checkAuthorization = require("../Middleware/check.auth");
 const roleAuthorization = require("../Middleware/role.auth");
-const adminCtrl = require('../Controllers/admin.controller')
+const adminCtrl = require("../Controllers/admin.controller");
 const Role = require("../Models/role");
+const reservationTypeCtrl = require("../Controllers/reservationtypes.controller");
 const User = require("../Models/user");
 
 //get role admin
@@ -31,5 +32,14 @@ router.get(
   checkAuthorization,
   roleAuthorization(parseInt(getAdminRole), userCtrl.verifyDocuments)
 );
+
+//add type of reservation to platform
+router.post(
+  "/addReservationType",
+  checkAuthorization,
+  roleAuthorization(1),
+  reservationTypeCtrl.createAReservationType
+);
+
 
 module.exports = router;
