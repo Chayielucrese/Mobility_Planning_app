@@ -9,7 +9,7 @@ const ReserveVehicle = sequelize.define("ReserveVehicle", {
   reservationId: {
     type: DataTypes.INTEGER,
     references: {
-      model: ReserveVehicle,
+      model: Reservation,
       key: "id",
     },
   },
@@ -21,17 +21,20 @@ const ReserveVehicle = sequelize.define("ReserveVehicle", {
     },
   },
   pickUpPoint: { type: DataTypes.STRING, allowNull: false },
+  
   destination: { type: DataTypes.STRING, allowNull: false },
   reservedVehicleFee: { type: DataTypes.FLOAT },
-  numberOfSeats: { type: DataTypes.INTEGER },
-  seatNumber: { type: DataTypes.INTEGER },
+  numberOfSeats: { type: DataTypes.INTEGER, defaultValue: 1 },
+  seatNumbeatior: { type: DataTypes.INTEGER },
   timeOfService: { type: DataTypes.TIME },
+  executionDate: {type: DataTypes.DATE},
+  reservationtype: { type: DataTypes.ENUM("advance", "instant") },
 });
-UserRole.sync()
+ReserveVehicle.sync()
   .then(() => {
-    console.log("UserRole created successfully");
+    console.log("ReserveVehicle created successfully");
   })
   .catch((err) => {
     console.log("fail to create model", err);
   });
-module.exports = UserRole;
+module.exports = ReserveVehicle;

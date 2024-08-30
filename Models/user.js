@@ -151,6 +151,10 @@ const User = sequelize.define("User", {
   appFee: {
     type: DataTypes.DECIMAL,
   },
+  subscription:{
+    type: DataTypes.BOOLEAN,
+    default: false
+  }
 });
 
 User.sync()

@@ -6,6 +6,7 @@ const router = express.Router()
 router.post('/createWallet', checkAuthorization, walletCtrl.createWallet)
 //view Wallet
 router.get('/myWallet', checkAuthorization, walletCtrl.viewWallet)
-
+//recharge wallet
+router.put('/rechargeWallet', checkAuthorization, walletCtrl.rechargeAccount)
 
 module.exports= router

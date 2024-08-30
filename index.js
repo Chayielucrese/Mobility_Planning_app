@@ -44,6 +44,9 @@ app.use('/api', require('./Routes/statistics.routes'));
 app.use('/api', require('./Routes/ride.routes'));
 app.use('/api', require('./Routes/driver.routes'));
 app.use('/api', require('./Routes/wallet.routes'));
+app.use('/api', require('./Routes/reservation.routes'));
+app.use('/api', require('./Routes/reservevehicle.routes'));
+
 
 
 

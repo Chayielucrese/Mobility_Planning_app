@@ -1,16 +1,22 @@
 const { Timestamp } = require("firebase-admin/firestore");
 const { Sequelize, DataTypes, TIME, FLOAT } = require("sequelize");
+const sequelize = require("../DbConfig/db.connect");
 
-const Reservation = Sequelize.afterDefine("Reservation", {
+//create reservation
+const Reservation = sequelize.define("Reservation", {
   bookingStatus: { type: DataTypes.BOOLEAN, defaultValue: false },
   bookingTotalCost: { type: DataTypes.FLOAT },
-  reservationType: { type: DataTypes.ENUM("advance", "instant") },
   userId: { type: DataTypes.INTEGER, allowNull: false },
   paymentStatus: { type: DataTypes.BOOLEAN, defaultValue: false },
-  paymentMode: { type: DataTypes.ENUM("wallet", "cash"), allowNull: false , defaultValue: "wallet"},
+  paymentMode: {
+    type: DataTypes.ENUM("wallet", "cash"),
+    allowNull: false,
+    defaultValue: "wallet",
+  },
   bookingDate: { type: DataTypes.DATE },
-  bookingTime: { type: TIME },
-  bookingTotalCost: { type: FLOAT },
+  bookingTime: { type: DataTypes.TIME },
+  bookingTotalCost: { type: DataTypes.FLOAT },
+  cancelBooking: {type: DataTypes.BOOLEAN, defaultValue: false}
 });
 
 Reservation.sync()
@@ -21,3 +27,5 @@ Reservation.sync()
     console.log("fail to create model", err);
   });
 module.exports = Reservation;
+
+//cancel reservation

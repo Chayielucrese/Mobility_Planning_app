@@ -409,7 +409,6 @@ exports.viewUploadedDocuments = async (req, res) => {
       // vehicleInsuranceCertificate:
       //   user_vehicle_docs.vehicleInsuranceCertificate,
     },
-  
   });
 };
 

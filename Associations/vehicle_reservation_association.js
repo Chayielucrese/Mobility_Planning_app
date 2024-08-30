@@ -3,12 +3,12 @@ const Vehicle = require("../Models/vehicle");
 const ReserveVehicle = require("../Models/ReserveVehicle");
 
 // Define many-to-many relationships
-User.belongsToMany(Reservation, {
+Vehicle.belongsToMany(Reservation, {
   through: ReserveVehicle,
   as: "reservations",
   foreignKey: "reservationId",
 });
-Role.belongsToMany(Vehicle, {
+Reservation.belongsToMany(Vehicle, {
   through: ReserveVehicle,
   as: "vehicles",
   foreignKey: "vehicleId",

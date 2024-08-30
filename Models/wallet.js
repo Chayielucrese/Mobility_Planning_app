@@ -3,8 +3,8 @@ const sequelize = require("../DbConfig/db.connect");
 // Define the Wallet model
 const Wallet = sequelize.define("Wallet", {
     currentBalance: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
+      type: DataTypes.FLOAT,
+      defaultValue: 0.0
     },
     userId: {
       type: DataTypes.INTEGER,

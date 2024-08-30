@@ -1,7 +1,10 @@
-const { Op, where } = require("sequelize");
+
 const wallet = require("../Models/Wallet");
 const { empty } = require("php-in-js/modules/types");
+const User = require("../Models/user");
 const bcrypt = require("bcrypt");
+
+//create Wallet
 exports.createWallet = async (req, res) => {
   try {
     const userObj = req.user;
@@ -41,37 +44,96 @@ exports.createWallet = async (req, res) => {
     return res.status(500).json({ msg: "Internal server error" });
   }
 };
-//view wallet
+//View Wallet
 exports.viewWallet = async (req, res) => {
-  const userObj = req.user;
-  const { password } = req.body;
+  try {
+    const userObj = req.user;
+    const { password } = req.body;
 
-  if (password === null) {
-    return res.status(400).json({
-      msg: "Enter the password to your wallet",
-    });
+    if (empty(password)) {
+      return res.status(400).json({
+        msg: "Enter the password to your wallet",
+      });
+    }
+    const my_wallet = await wallet.findOne({ where: { userId: userObj.id } });
+
+    if (!my_wallet) {
+      return res.status(404).json({
+        msg: "We can't find your wallet. Please try again later or create a wallet.",
+      });
+    }
+    console.log(my_wallet.walletPassword, "walletPassword");
+
+    const compare_password = bcrypt.compareSync(
+      password,
+      my_wallet.walletPassword
+    );
+
+    if (compare_password) {
+      return res
+        .status(200)
+        .json({ msg: { currentBalance: my_wallet.currentBalance } });
+    } else {
+      return res.status(400).json({ msg: "Incorrect password" });
+    }
+  } catch (err) {
+    console.error("Error viewing wallet: ", err);
+    return res.status(500).json({ msg: "Internal server error" });
   }
-  console.log("password", password);
+};
+//Recharge Wallet
+exports.rechargeAccount = async (req, res) => {
+  try {
+    const { phone, amount } = req.body;
+    const userObj = req.user;
 
-  const my_wallet = await wallet.findOne({ where: { userId: userObj.id } });
+    if (!phone || !amount) {
+      return res.status(400).json({ msg: "Enter all required fields" });
+    }
 
-  if (!my_wallet) {
-    return res.status(404).json({
-      msg: "We can't find your wallet please try again later or create a wallet",
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount)) {
+      return res.status(400).json({ msg: "Invalid amount format" });
+    }
+
+    const user_with_phone = await User.findOne({
+      where: { id: userObj.id },
+      attributes: ["phone"],
     });
-  }
-  const match_password = await wallet.findOne({
-    where: {
-      walletPassword: bcrypt.compareSync(password, my_wallet.walletPassword),
-    },
-  });
-  console.log(match_password, "password");
 
-  if (match_password) {
-    return res
-      .status(200)
-      .json({ msg: { currentBalance: my_wallet.currentBalance } });
-  } else {
-    return res.status(400).json({ mgs: "incorrect password" });
+    if (!user_with_phone) {
+      return res.status(404).json({ msg: "Phone number does not exist" });
+    }
+
+    if (user_with_phone.phone !== phone) {
+      return res
+        .status(404)
+        .json({ msg: "This phone number does not correspond to our data" });
+    }
+
+    const user_wallet = await wallet.findOne({
+      where: { userId: userObj.id },
+    });
+
+    if (!user_wallet) {
+      return res.status(404).json({ msg: "Wallet not found" });
+    }
+
+    console.log("Current Balance:", user_wallet.currentBalance);
+
+    // Ensure 'currentBalance' is a number
+    const currentBalance = parseFloat(user_wallet.currentBalance) || 0.0;
+    const updatedBalance = currentBalance + parsedAmount;
+
+    if (isNaN(updatedBalance)) {
+      return res.status(400).json({ msg: "Error calculating the new balance" });
+    }
+
+    await user_wallet.update({ currentBalance: updatedBalance });
+
+    return res.status(200).json({ msg: { currentBalance: updatedBalance } });
+  } catch (err) {
+    console.error("Recharging failed: ", err);
+    return res.status(500).json({ msg: "Internal server error" });
   }
 };
