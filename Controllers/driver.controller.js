@@ -13,3 +13,13 @@ exports.getAllAvailableDrivers = async (req, res) => {
     return res.status(200).json({ msg: drivers_available });
   }
 };
+exports.getDriverDocumentStatus = async (req, res) => {
+  const userObj = req.user
+
+  const get_driver = await User.findOne({where: {id: userObj.id}})
+  if (empty(get_driver)) {
+    return res.status(200).json({ msg: "Driver not found" });
+  } else {
+    return res.status(200).json({ documentStatus: get_driver.documentStatus });
+  }
+};

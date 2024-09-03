@@ -113,8 +113,20 @@ exports.reserveVehicle = async (req, res) => {
     } else if (empty(date) || empty(time)) {
       return res
         .status(400)
-        .json({ msg: "Please precise a date and time for this reservation" });
+        .json({ msg: "Please specify a date and time for this reservation" });
     }
+
+    // Convert time to 24-hour format if needed
+    const [hours, minutes] = time.split(":");
+    let formattedTime;
+    if (time.includes("PM") && hours < 12) {
+      formattedTime = `${parseInt(hours) + 12}:${minutes}`;
+    } else if (time.includes("AM") && hours == 12) {
+      formattedTime = `00:${minutes}`;
+    } else {
+      formattedTime = `${hours}:${minutes}`;
+    }
+
     const new_reservation = await ReserveVehicle.create({
       reservationId: reservation_id,
       vehicleId: vehicle_id,
@@ -122,26 +134,26 @@ exports.reserveVehicle = async (req, res) => {
       destination: advance_destination,
       numberOfSeats: number_of_seats,
       reservationtype: reservation_type,
-      timeOfService: time,
+      timeOfService: formattedTime,
       executionDate: date,
     });
 
-    if (conformed_drivers) {
+
+    if (conformed_drivers) { 
       const reservation_details = await Reservation.findOne({
         where: { [Op.and]: { id: reservation_id, userId: userObj.id } },
       });
       if (reservation_details) {
         conformed_drivers.forEach(async (driver) => {
-          if (
-            await Vehicle.findOne({
-              where: {
-                [Op.and]: {
-                  owner: driver.id,
-                  vehicleType: get_vehicle_type.name,
-                },
+          const vehicle = await Vehicle.findOne({
+            where: {
+              [Op.and]: {
+                owner: driver.id,
+                vehicleType: get_vehicle_type.name,
               },
-            })
-          ) {
+            },
+          });
+          if (vehicle) {
             SendPushNotificationToDriver(
               new_reservation.destination,
               new_reservation.pickUpPoint,
@@ -151,12 +163,14 @@ exports.reserveVehicle = async (req, res) => {
               user_details.surname,
               driver.id
             );
-            return res.status(201).json({
-              msg: "Request created successfully but still pending.... you will recieve a reply shortly",
-            });
+          
           }
         });
+    
       }
+      return res.status(201).json({
+        msg: "Request created successfully but still pending.... you will receive a reply shortly",
+      });
     } else {
       return res.status(201).json({
         msg: "Your request encounted some problems please try again later",

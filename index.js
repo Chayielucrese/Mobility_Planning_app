@@ -3,7 +3,7 @@ const app = express();
 const bodyparser = require("body-parser");
 const sequelize = require("./DbConfig/db.connect");
 const path = require("path");
-const cors = require('cors');',,,,,,,,,,,,,,,,,'
+const cors = require('cors');
 //importing my database connection
 require("./DbConfig/db.connect");
 
@@ -13,6 +13,22 @@ app.use(
     limit: "50mb",
   })
 );
+//cors configuration
+app.use(cors({
+  origin: "*", // Change this to your frontend origin
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: "Authorization, Content-Type",
+  credentials: true, // if you're using cookies or authentication
+}));
+
+const server = require('http').createServer(app)
+const io = require('socket.io')(server);
+io.on('connection', (socket)=>{
+  console.log("user connected", socket.id);
+ 
+})
+
+
 app.use('/profileImages', express.static(path.join(__dirname, "profileImages")))
 app.use('/Vehicles', express.static(path.join(__dirname, "Vehicles")))
 app.use('/Uploads', express.static(path.join(__dirname, "Uploads")))
@@ -24,14 +40,6 @@ app.use(
     limit: "50mb",
   })
 );
-
-app.use(cors({
-  origin: "*",
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  allowedHeaders: "Authorization, Content-Type",
-  credentials: true,
-}));
-
 
 //dealing with static files
 app.use(express.static(path.join(__dirname, "client")));
@@ -46,8 +54,7 @@ app.use('/api', require('./Routes/driver.routes'));
 app.use('/api', require('./Routes/wallet.routes'));
 app.use('/api', require('./Routes/reservation.routes'));
 app.use('/api', require('./Routes/reservevehicle.routes'));
-
-
+app.use('/api', require('./Routes/notification.routes'));
 
 
 const port = 9000 || process.env.port;

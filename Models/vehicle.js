@@ -2,6 +2,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../DbConfig/db.connect");
 const user = require("./user");
 const { isLowercase } = require("validator");
+const url = require("../Front_url/image_url_front");
 
 const vehicle = sequelize.define(
   "vehicle",
@@ -58,7 +59,7 @@ const vehicle = sequelize.define(
       get() {
         const rawValue = this.getDataValue("vehicleRegistrationCertificate");
         return rawValue
-          ? "http://192.168.137.1:9000/Vehicles" + rawValue.replace("\\", "/")
+          ? `${url}:9000/Vehicles` + rawValue.replace("\\", "/")
           : null;
       },
       isLowercase: true,
@@ -68,7 +69,7 @@ const vehicle = sequelize.define(
       get() {
         const rawValue = this.getDataValue("vehicleInsuranceCertificate");
         return rawValue
-          ? "http://192.168.137.1:9000/Vehicles" + rawValue.replace("\\", "/")
+          ? `${url}:9000/Vehicles` + rawValue.replace("\\", "/")
           : null;
       },
       isLowercase: true,
@@ -78,7 +79,7 @@ const vehicle = sequelize.define(
       get() {
         const rawValue = this.getDataValue("vehicleSalesCertificate");
         return rawValue
-          ? "http://192.168.137.1:9000/Vehicles" + rawValue.replace("\\", "/")
+          ? `${url}:9000/Vehicles` + rawValue.replace("\\", "/")
           : null;
       },
       isLowercase: true,
@@ -88,7 +89,7 @@ const vehicle = sequelize.define(
       get() {
         const rawValue = this.getDataValue("vehicleRoadWorthinessReport");
         return rawValue
-          ? "http://192.168.137.1:9000/Vehicles" + rawValue.replace("\\", "/")
+          ? `${url}:9000/Vehicles` + rawValue.replace("\\", "/")
           : null;
       },
       isLowercase: true,

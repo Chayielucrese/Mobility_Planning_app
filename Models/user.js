@@ -1,7 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../DbConfig/db.connect");
-
-// Define the User model
+const url = require('../Front_url/image_url_front')// Define the User model
 const User = sequelize.define("User", {
   name: {
     type: DataTypes.STRING,
@@ -55,8 +54,8 @@ const User = sequelize.define("User", {
     get() {
       const rawValue = this.getDataValue("profileImage");
       return rawValue
-        ? "http://192.168.137.1:9000/Uploads" + rawValue.replace("\\", "/") ||
-            "http://192.168.137.1:9000/profileImages" +
+        ? `${url}:9000/Uploads` + rawValue.replace("\\", "/") ||
+            `${url}:9000/profileImages` +
               rawValue.replace("\\", "/")
         : null;
     },
@@ -77,7 +76,7 @@ const User = sequelize.define("User", {
     get() {
       const rawValue = this.getDataValue("CNI");
       return rawValue
-        ? "http://192.168.137.1:9000/Uploads" + rawValue.replace("\\", "/") 
+        ? `${url}:9000/Uploads` + rawValue.replace("\\", "/") 
         : null;
     },
   },
@@ -86,7 +85,7 @@ const User = sequelize.define("User", {
     get() {
       const rawValue = this.getDataValue("vehicleReg");
       return rawValue
-        ? "http://192.168.137.1:9000/Uploads" + rawValue.replace("\\", "/")
+        ?`${url}:9000/Uploads` + rawValue.replace("\\", "/")
         : null;
     },
   },
@@ -123,7 +122,7 @@ const User = sequelize.define("User", {
     get() {
       const rawValue = this.getDataValue("vehiclePhoto");
       return rawValue
-        ? "http://192.168.137.1:9000/Uploads" + rawValue.replace("\\", "/") 
+        ? `${url}:9000/Uploads` + rawValue.replace("\\", "/") 
         : null;
     },
   },
@@ -132,7 +131,7 @@ const User = sequelize.define("User", {
     get() {
       const rawValue = this.getDataValue("drivingLicense");
       return rawValue
-        ? "http://192.168.137.1:9000/Uploads" + rawValue.replace("\\", "/") 
+        ? `${url}:9000/Uploads` + rawValue.replace("\\", "/") 
         : null;
     },
   },

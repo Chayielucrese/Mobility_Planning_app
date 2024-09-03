@@ -1,3 +1,4 @@
+const Reservation = require("../Models/reservation");
 const ReservationType = require("../Models/reservationtypes");
 const { empty } = require("php-in-js");
 
@@ -39,3 +40,9 @@ exports.getAllReservationTypes = async (req, res) => {
     return res.status(500).json({ msg: "Server Error", error: error.message });
   }
 };
+
+//view booking history
+// exports.viewBookingHistory = async(req, res)=>{
+//   const userObj = req.user
+//   const find_he_reservations = await Reservation.findAll({where: {userId: userObj.id}1})
+// }

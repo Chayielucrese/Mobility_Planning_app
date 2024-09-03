@@ -5,5 +5,8 @@ const router = express.Router()
 
 router.get('/getAvailableDrivers',  checkAuthorization, driverCtrl.getAllAvailableDrivers)
 
+//get driver document status
+router.get('/getDocumentStatus',  checkAuthorization, driverCtrl.getDriverDocumentStatus)
+
 
 module.exports = router
