@@ -10,6 +10,7 @@ const Role = require("../Models/role");
 const Vehicle = require("../Models/vehicle");
 const Ride = require("../Models/rides.");
 const e = require("express");
+const notification = require("../OtherUsefulFiles/notification");
 //reserve a vehicle
 exports.reserveVehicle = async (req, res) => {
   const userObj = req.user;
@@ -27,21 +28,27 @@ exports.reserveVehicle = async (req, res) => {
   const vehicle_id = req.params.vehicle_id;
 
   const reservation_id = req.params.reservation_id;
+
+  //find the object with name role
+  const role_driver = await Role.findOne({where: {name:"driver"}})
+
+  
   const conformed_drivers = await User.findAll({
     where: {
       [Op.and]: {
-        role: "driver",
+        role: role_driver.id,
         documentStatus: "approved",
         subscription: true,
       },
     },
   });
-  const get_vehicle_type = await Ride.findOne(
-    { where: { id: vehicle_id } },
-    { attributes: ["name"] }
-  );
+  
+  // const get_vehicle_type = await Ride.findOne(
+  //   { where: { id: vehicle_id } },
+  //   { attributes: ["name"] }
+  // );
 
-  const user_details = await User.findOne({ where: { id: userObj.id } });
+  // const user_details = await User.findOne({ where: { id: userObj.id } });
   if (empty(reservation_type)) {
     return res
       .status(400)
@@ -54,7 +61,7 @@ exports.reserveVehicle = async (req, res) => {
     } else if (empty(destination)) {
       return res.status(400).json({ msg: "Please enter your destination" });
     }
-    const new_reservation = await ReserveVehicle.create({
+    await ReserveVehicle.create({
       reservationId: reservation_id,
       vehicleId: vehicle_id,
       pickUpPoint: pickup_point,
@@ -64,15 +71,18 @@ exports.reserveVehicle = async (req, res) => {
     });
 
     if (conformed_drivers) {
+
+      
       const reservation_details = await Reservation.findOne({
         where: { [Op.and]: { id: reservation_id, userId: userObj.id } },
       });
-      console.log(BOOLEAN(reservation_details), "details");
+
 
       if (reservation_details) {
-        console.log(userObj.id, "userId");
+  
 
         conformed_drivers.forEach(async (driver) => {
+          
           if (
             await Vehicle.findOne({
               where: {
@@ -83,13 +93,11 @@ exports.reserveVehicle = async (req, res) => {
               },
             })
           ) {
-            SendPushNotificationToDriver(
-              new_reservation.destination,
-              new_reservation.pickUpPoint,
-              user_details.name,
-              user_details.surname,
-              driver.id
-            );
+
+
+            notification(driver);
+       
+            
           }
         });
         return res.status(201).json({
@@ -138,8 +146,7 @@ exports.reserveVehicle = async (req, res) => {
       executionDate: date,
     });
 
-
-    if (conformed_drivers) { 
+    if (conformed_drivers) {
       const reservation_details = await Reservation.findOne({
         where: { [Op.and]: { id: reservation_id, userId: userObj.id } },
       });
@@ -163,10 +170,8 @@ exports.reserveVehicle = async (req, res) => {
               user_details.surname,
               driver.id
             );
-          
           }
         });
-    
       }
       return res.status(201).json({
         msg: "Request created successfully but still pending.... you will receive a reply shortly",

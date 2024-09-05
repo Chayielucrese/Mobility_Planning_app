@@ -4,6 +4,7 @@ const userCtrl = require("../../Controllers/user.controller");
 const checkAuthorization = require("../../Middleware/check.auth");
 const reservationTypeCtrl = require("../../Controllers/reservationtypes.controller");
 const geoapifyCtrl = require("../../Geolocation/index");
+const subscriptionCtrl = require('../../Controllers/user.subscription.controller')
 //create user
 router.post("/createUser", userCtrl.createUser);
 
@@ -39,3 +40,6 @@ router.get(
 //get places
 router.get("/getPlaces",checkAuthorization, geoapifyCtrl.getPlaces);
 module.exports = router;
+
+//perform subscription
+router.post('/mySubscription/:subscription_id', checkAuthorization, subscriptionCtrl.UserPerformsubscription)

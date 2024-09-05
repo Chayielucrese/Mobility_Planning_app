@@ -385,7 +385,7 @@ exports.viewUploadedDocuments = async (req, res) => {
     { attributes: ["drivingLicense", "CNI", "vehiclePhoto", "vehicleReg"] }
   );
   const user_vehicle_docs = await Vehicle.findOne(
-    { where: { id: userObj.id } },
+    { where: { owner: userObj.id } },
     {
       attributes: [
         "vehicleRegistrationCertificate",
@@ -395,19 +395,20 @@ exports.viewUploadedDocuments = async (req, res) => {
       ],
     }
   );
+
   return res.status(200).json({
     msg: {
       vehiclePhoto: user_docs.vehiclePhoto,
-      vehicleReg: user_docs.vehicleReg,
+     
       CNI: user_docs.CNI,
       drivingLicense: user_docs.drivingLicense,
-      // vehicleRegistrationCertificate:
-      //   user_vehicle_docs.vehicleRegistrationCertificate,
-      // vehicleSalesCertificate: user_vehicle_docs.vehicleSalesCertificate,
-      // vehicleRoadWorthinessReport:
-      //   user_vehicle_docs.vehicleRoadWorthinessReport,
-      // vehicleInsuranceCertificate:
-      //   user_vehicle_docs.vehicleInsuranceCertificate,
+      vehicleRegistrationCertificate:
+        user_vehicle_docs.vehicleRegistrationCertificate,
+      vehicleSalesCertificate: user_vehicle_docs.vehicleSalesCertificate,
+      vehicleRoadWorthinessReport:
+        user_vehicle_docs.vehicleRoadWorthinessReport,
+      vehicleInsuranceCertificate:
+        user_vehicle_docs.vehicleInsuranceCertificate,
     },
   });
 };

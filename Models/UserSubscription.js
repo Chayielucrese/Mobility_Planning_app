@@ -18,6 +18,11 @@ const UserSubscription = sequelize.define("Subcription", {
       key: "id",
     },
   },
+  paymentMode: { type: DataTypes.ENUM("wallet", "cash") },
+  paymentStatus: { type: DataTypes.BOOLEAN, defaultValue: false },
+  duration: { type: DataTypes.INTEGER },
+  startDate: { type: DataTypes.DATE },
+  endDate: { type: DataTypes.DATE },
 });
 UserSubscription.sync()
   .then(() => {

@@ -14,14 +14,15 @@ const Reservationtypes = sequelize.define("ReservationTypes", {
     allowNull: false,
     isLowercase: true,
   },
-  price:{
+  price: {
     type: DataTypes.FLOAT,
-    allowNull: false
+    allowNull: false,
   },
-  terms:{
-type:DataTypes.STRING,
 
+  terms: {
+    type: DataTypes.STRING,
   },
+
   reconmendation: {
     type: DataTypes.STRING,
     allowNull: false,

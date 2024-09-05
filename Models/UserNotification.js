@@ -18,6 +18,7 @@ const UserNotification = sequelize.define("Subcription", {
       key: "id",
     },
   },
+
 });
 UserNotification.sync()
   .then(() => {

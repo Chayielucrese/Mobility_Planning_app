@@ -1,15 +1,21 @@
-const notification = async (userid, req, res) => {
-  const subject = `eTravel Etravel Update`;
-  const content = `congratulations  ${userid.name} your documents has been verified and approved successfully`;
 
-  const new_not = await Notification.create({
-    subject: subject,
-    userId: userid,
-    content: content,
-  });
-  return res
-    .status(201)
-    .json({ msg: "Notification send successfully", new_not });
-};
-
-module.exports = notification
+const Notification = require('../Models/Notification')
+const notification = async (driver, req, res) => {
+    try {
+      const subject = `eTravel Update`;
+      const content = `Congratulations ${driver.name} ${driver.surname}, your documents have been verified and approved successfully.`;
+  
+      const newNotification = await Notification.create({
+        subject: subject,
+        userId: driver.id,
+        content: content,
+      });
+      console.error( "Notification sent successfully", newNotification);
+     
+    } catch (error) {
+      console.error('Error creating notification:', error);
+        }
+  };
+  
+  module.exports = notification;
+  

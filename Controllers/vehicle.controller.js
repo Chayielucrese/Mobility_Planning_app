@@ -64,7 +64,9 @@ exports.createVehicle = async (req, res) => {
           vehicleSalescert,
           vehicleRoadWthRep,
           vehicleRegCert
-        );
+        );if(!VehicleOwnerUpload){
+          return res.status(400).json({ msg: "Fail to upload vehicle documents" });
+        }
         return res.status(201).json({ msg: "You Added a vehicle" });
       }
     } else {

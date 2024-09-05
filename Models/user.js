@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../DbConfig/db.connect");
-const url = require('../Front_url/image_url_front')// Define the User model
+const url = require("../Front_url/image_url_front"); // Define the User model
 const User = sequelize.define("User", {
   name: {
     type: DataTypes.STRING,
@@ -55,8 +55,7 @@ const User = sequelize.define("User", {
       const rawValue = this.getDataValue("profileImage");
       return rawValue
         ? `${url}:9000/Uploads` + rawValue.replace("\\", "/") ||
-            `${url}:9000/profileImages` +
-              rawValue.replace("\\", "/")
+            `${url}:9000/profileImages` + rawValue.replace("\\", "/")
         : null;
     },
   },
@@ -76,7 +75,7 @@ const User = sequelize.define("User", {
     get() {
       const rawValue = this.getDataValue("CNI");
       return rawValue
-        ? `${url}:9000/Uploads` + rawValue.replace("\\", "/") 
+        ? `${url}:9000/Uploads` + rawValue.replace("\\", "/")
         : null;
     },
   },
@@ -85,7 +84,7 @@ const User = sequelize.define("User", {
     get() {
       const rawValue = this.getDataValue("vehicleReg");
       return rawValue
-        ?`${url}:9000/Uploads` + rawValue.replace("\\", "/")
+        ? `${url}:9000/Uploads` + rawValue.replace("\\", "/")
         : null;
     },
   },
@@ -122,7 +121,7 @@ const User = sequelize.define("User", {
     get() {
       const rawValue = this.getDataValue("vehiclePhoto");
       return rawValue
-        ? `${url}:9000/Uploads` + rawValue.replace("\\", "/") 
+        ? `${url}:9000/Uploads` + rawValue.replace("\\", "/")
         : null;
     },
   },
@@ -131,7 +130,7 @@ const User = sequelize.define("User", {
     get() {
       const rawValue = this.getDataValue("drivingLicense");
       return rawValue
-        ? `${url}:9000/Uploads` + rawValue.replace("\\", "/") 
+        ? `${url}:9000/Uploads` + rawValue.replace("\\", "/")
         : null;
     },
   },
@@ -150,10 +149,11 @@ const User = sequelize.define("User", {
   appFee: {
     type: DataTypes.DECIMAL,
   },
-  subscription:{
+  subscription: {
     type: DataTypes.BOOLEAN,
-    default: false
-  }
+    default: false,
+  },
+
 });
 
 User.sync()
