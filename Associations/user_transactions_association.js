@@ -1,14 +1,14 @@
 const User = require("../Models/user");
-const Wallet = require("../Models/Wallet");
+const Transaction = require("../Models/transaction");
 
-// Define one-to-one relationshipss
-User.hasOne(Wallet, {
-  as: "wallets",
+// Define one-to-many relationship
+User.hasMany(Transaction, {
+  as: "transactions",
   foreignKey: "userId",
 });
-Wallet.belongsTo(User, {
+Transaction.belongsTo(User, {
   as: "users",
-  foreignKey: "userId",
+  foreignKey: "transactionId",
 });
 
 sequelize

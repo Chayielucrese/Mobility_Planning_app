@@ -41,5 +41,7 @@ router.get(
 router.get("/getPlaces",checkAuthorization, geoapifyCtrl.getPlaces);
 module.exports = router;
 
+
+
 //perform subscription
-router.post('/mySubscription/:subscription_id', checkAuthorization, subscriptionCtrl.UserPerformsubscription)
+router.post('/mySubscription/:subscriptionId', checkAuthorization, subscriptionCtrl.UserPerformsubscription)

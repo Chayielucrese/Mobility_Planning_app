@@ -14,12 +14,18 @@ exports.createAReservationType = async (req, res) => {
       .status(400)
       .json({ msg: "please provide a brief description to this reservation" });
   } else {
+    if(await ReservationType.findOne({where: {name: name}})){
+      return res
+      .status(409)
+      .json({ msg: "This Subscription already exist" });
+  }
+    }
     await ReservationType.create({ name, description, reconmendation, price });
     return res
       .status(201)
-      .json({ msg: "reservation type created successfully" });
+      .json({ msg: "Subscription created successfully" });
   }
-};
+
 
 //get all reservationTypes
 

@@ -25,14 +25,14 @@ const Reservationtypes = sequelize.define("ReservationTypes", {
 
   reconmendation: {
     type: DataTypes.STRING,
-    allowNull: false,
+    // allowNull: false,
     isLowercase: true,
   },
 });
 
 Reservationtypes.sync()
   .then(() => {
-    console.log("Reservationtypes created successfully");
+    // console.log("Reservationtypes created successfully");
   })
   .catch((err) => {
     console.log("Reservationtypes to create model", err);

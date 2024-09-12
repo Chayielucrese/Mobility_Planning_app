@@ -1,16 +1,17 @@
 const { now } = require("sequelize/lib/utils");
 const Reservation = require("../Models/reservation");
-const wallet = require("../Models/Wallet");
+
 const { empty } = require("php-in-js");
 const { Op } = require("sequelize");
+const User = require("../Models/user");
 
 exports.createReservation = async (req, res) => {
   try {
     const userObj = req.user;
-    const find_user_wallet = await wallet.findOne({
+    const find_user_wallet = await User.findOne({
       where: { userId: userObj.id },
-    });
-    if (find_user_wallet && find_user_wallet.currrentBalance != parseFloat(0)) {
+    }, {attributes:["balance"]});
+    if (find_user_wallet && find_user_wallet.balance != parseInt(0)) {
       const new_request = await Reservation.create({
         paymentMode: "wallet",
         userId: userObj.id,

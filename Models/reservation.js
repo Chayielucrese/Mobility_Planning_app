@@ -1,6 +1,7 @@
-const { Timestamp } = require("firebase-admin/firestore");
-const { Sequelize, DataTypes, TIME, FLOAT } = require("sequelize");
+
+const { DataTypes } = require("sequelize");
 const sequelize = require("../DbConfig/db.connect");
+
 
 //create reservation
 const Reservation = sequelize.define("Reservation", {
@@ -19,13 +20,12 @@ const Reservation = sequelize.define("Reservation", {
   cancelBooking: {type: DataTypes.BOOLEAN, defaultValue: false}
 });
 
+
 Reservation.sync()
   .then(() => {
-    console.log("Reservation created successfully");
+
   })
   .catch((err) => {
     console.log("fail to create model", err);
   });
 module.exports = Reservation;
-
-//cancel reservation

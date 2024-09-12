@@ -22,7 +22,7 @@ const Ride = sequelize.define(
 
 Ride.sync()
   .then(() => {
-    console.log("ride created successfully");
+    // console.log("ride created successfully");
   })
   .catch((err) => {
     console.log("fail to create model", err);

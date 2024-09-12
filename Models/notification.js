@@ -2,15 +2,22 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../DbConfig/db.connect");
 
 const Notification = sequelize.define("Notification", {
-  userId: { type: DataTypes.INTEGER },
+  driverId: { type: DataTypes.INTEGER },
   subject: { type: DataTypes.STRING },
   content: { type: DataTypes.STRING },
-  read: {type: DataTypes.BOOLEAN, defaultValue: false}
+  read: {type: DataTypes.BOOLEAN, defaultValue: false},
+  pickUpPoint: {type: DataTypes.STRING},
+  destination: {type: DataTypes.STRING},
+  date: {type:DataTypes.DATE},
+  userName: {type: DataTypes.STRING},
+  userSurname: {type: DataTypes.STRING},
+  userPhone: {type: DataTypes.STRING}
+  
 });
 
 Notification.sync()
   .then(() => {
-    console.log("Notification created successfully");
+    // console.log("Notification created successfully");
   })
   .catch((err) => {
     console.log("fail to create model", err);

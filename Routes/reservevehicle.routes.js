@@ -6,5 +6,7 @@ const router = express.Router()
 
 router.post('/reserveVehicle/:vehicle_id/:reservation_id',  checkAuthorization,checkRole(2), reservevehicleCtrl.reserveVehicle)
 
+//view reserved vehicles
 
+router.get('/viewPendingReservation', checkAuthorization, reservevehicleCtrl.viewPendingReservation)
 module.exports = router

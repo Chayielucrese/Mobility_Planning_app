@@ -1,139 +1,133 @@
 
-const wallet = require("../Models/Wallet");
 const { empty } = require("php-in-js/modules/types");
-const User = require("../Models/user");
-const bcrypt = require("bcrypt");
+const User = require("../Models/user")
+const monetbil = require('../services/monetbil');
+const _processTransaction = require("./transactionController");
 
 //create Wallet
-exports.createWallet = async (req, res) => {
-  try {
-    const userObj = req.user;
-    const { password } = req.body;
-    console.log(password, "my pwd");
+// exports.createWallet = async (req, res) => {
+//   try {
+//     const userObj = req.user;
+//     const { password } = req.body;
+//     console.log(password, "my pwd");
 
-    if (!(await wallet.findOne({ where: { userId: userObj.id } }))) {
-      if (empty(password) || !password || isNaN(password)) {
-        return res
-          .status(400)
-          .json({ msg: "Password must be a numeric value." });
-      }
+//     if (!(await wallet.findOne({ where: { userId: userObj.id } }))) {
+//       if (empty(password) || !password || isNaN(password)) {
+//         return res
+//           .status(400)
+//           .json({ msg: "Password must be a numeric value." });
+//       }
 
-      if (password.length < 5 || password.length > 5) {
-        return res.status(400).json({
-          msg: "Your PIN code must be 5 numbers long",
-        });
-      }
-      if (
-        !(await wallet.create({
-          userId: userObj.id,
-          currentBalace: 0,
-          walletPassword: bcrypt.hashSync(password, 10),
-        }))
-      ) {
-        return res
-          .status(400)
-          .json({ msg: "An error occured while creating wallet" });
-      } else {
-        return res.status(201).json({ msg: "wallet created successfully" });
-      }
-    } else {
-      return res.status(409).json({ msg: "you already have a wallet" });
-    }
-  } catch (err) {
-    console.log("error", err);
-    return res.status(500).json({ msg: "Internal server error" });
-  }
-};
-//View Wallet
+//       if (password.length < 5 || password.length > 5) {
+//         return res.status(400).json({
+//           msg: "Your PIN code must be 5 numbers long",
+//         });
+//       }
+//       if (
+//         !(await wallet.create({
+//           userId: userObj.id,
+//           currentBalace: 0,
+//           walletPassword: bcrypt.hashSync(password, 10),
+//         }))
+//       ) {
+//         return res
+//           .status(400)
+//           .json({ msg: "An error occured while creating wallet" });
+//       } else {
+//         return res.status(201).json({ msg: "wallet created successfully" });
+//       }
+//     } else {
+//       return res.status(409).json({ msg: "you already have a wallet" });
+//     }
+//   } catch (err) {
+//     console.log("error", err);
+//     return res.status(500).json({ msg: "Internal server error" });
+//   }
+// };
+// //View Wallet
 exports.viewWallet = async (req, res) => {
   try {
     const userObj = req.user;
-    const { password } = req.body;
+    // const { password } = req.body;
 
-    if (empty(password)) {
-      return res.status(400).json({
-        msg: "Enter the password to your wallet",
-      });
-    }
-    const my_wallet = await wallet.findOne({ where: { userId: userObj.id } });
+    // if (empty(password)) {
+    //   return res.status(400).json({
+    //     msg: "Enter the password to your wallet",
+    //   });
+    // }
+    const my_wallet = await User.findOne({ where: { userId: userObj.id } }, {attribute: ["balance"]});
 
-    if (!my_wallet) {
-      return res.status(404).json({
-        msg: "We can't find your wallet. Please try again later or create a wallet.",
-      });
-    }
-    console.log(my_wallet.walletPassword, "walletPassword");
 
-    const compare_password = bcrypt.compareSync(
-      password,
-      my_wallet.walletPassword
-    );
-
-    if (compare_password) {
       return res
         .status(200)
-        .json({ msg: { currentBalance: my_wallet.currentBalance } });
-    } else {
-      return res.status(400).json({ msg: "Incorrect password" });
-    }
+        .json({  currentBalance: my_wallet.balance  });
+  
   } catch (err) {
     console.error("Error viewing wallet: ", err);
     return res.status(500).json({ msg: "Internal server error" });
   }
 };
 //Recharge Wallet
-exports.rechargeAccount = async (req, res) => {
-  try {
-    const { phone, amount } = req.body;
-    const userObj = req.user;
+exports.recharge = async(req, res) => {
+  const { amount } = req.body 
 
-    if (!phone || !amount) {
-      return res.status(400).json({ msg: "Enter all required fields" });
-    }
-
-    const parsedAmount = parseFloat(amount);
-    if (isNaN(parsedAmount)) {
-      return res.status(400).json({ msg: "Invalid amount format" });
-    }
-
-    const user_with_phone = await User.findOne({
-      where: { id: userObj.id },
-      attributes: ["phone"],
-    });
-
-    if (!user_with_phone) {
-      return res.status(404).json({ msg: "Phone number does not exist" });
-    }
-
-    if (user_with_phone.phone !== phone) {
-      return res
-        .status(404)
-        .json({ msg: "This phone number does not correspond to our data" });
-    }
-
-    const user_wallet = await wallet.findOne({
-      where: { userId: userObj.id },
-    });
-
-    if (!user_wallet) {
-      return res.status(404).json({ msg: "Wallet not found" });
-    }
-
-    console.log("Current Balance:", user_wallet.currentBalance);
-
-    // Ensure 'currentBalance' is a number
-    const currentBalance = parseFloat(user_wallet.currentBalance) || 0.0;
-    const updatedBalance = currentBalance + parsedAmount;
-
-    if (isNaN(updatedBalance)) {
-      return res.status(400).json({ msg: "Error calculating the new balance" });
-    }
-
-    await user_wallet.update({ currentBalance: updatedBalance });
-
-    return res.status(200).json({ msg: { currentBalance: updatedBalance } });
-  } catch (err) {
-    console.error("Recharging failed: ", err);
-    return res.status(500).json({ msg: "Internal server error" });
+  if (empty(amount) || !parseInt(amount)) {
+      res.status(400).json({msg:'Please enter a valid amount to charge'})
   }
-};
+  if (amount < 100) {
+      res.status(400).json({msg:'You cannot charge less than 100 FCFA'})
+  }
+  console.log("can't enter here");
+
+  try {
+      const payment_url = await monetbil.initPayment({
+          amount, 
+          fee: Math.ceil(0.01 * amount), 
+          userId: req.user.id
+      })
+
+      return res.status(201).json({msg:'Payment initiated successfully',  payment_url })
+
+      } catch (e) {
+      console.log({ e })
+      
+      return res.status(500).json({msg: e.message || 'An error occurred while initing payment'})
+  }
+}
+
+
+exports.result = async(req, res) => {
+  const { payment_ref, status, message, transaction_id } = req.query
+      
+  if (status === 'cancelled') {
+      monetbil.removeRef(payment_ref)
+  }
+
+  return res.render('transactions/result', { 
+      status,
+      message: message || ''
+  })
+}
+
+
+/**
+ * This route is automatically call by monetbil when everything is ok
+ * So, she permit to update a balance of the user if payment is done
+ * 
+ * @internal It is not a real api route. is only use by monetbil
+ * @see monetbilservice file: /services/monetbil.js line: 46
+ */
+exports.notify = async (req, res) => {
+   const { ref }            = req.params
+   const { transaction_id } = req.query
+
+   const result = await _processTransaction(ref, transaction_id)
+   
+   switch (result) {
+       case 'GONE': return res.gone()
+       case 'FOUND': return res.found()
+       case 'FORBIDDEN': return res.forbidden()
+       case 'UNAUTHORIZED': return res.unauthorized()
+       default: return res.ok();
+   }
+}

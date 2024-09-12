@@ -21,13 +21,11 @@ app.use(cors({
   credentials: true, // if you're using cookies or authentication
 }));
 
-const server = require('http').createServer(app)
-const io = require('socket.io')(server);
-io.on('connection', (socket)=>{
-  console.log("user connected", socket.id);
- 
-})
 
+app.set('views',  path.join(__dirname, 'views'))
+app.set('view engine', 'ejs');
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/profileImages', express.static(path.join(__dirname, "profileImages")))
 app.use('/Vehicles', express.static(path.join(__dirname, "Vehicles")))
@@ -55,6 +53,7 @@ app.use('/api', require('./Routes/wallet.routes'));
 app.use('/api', require('./Routes/reservation.routes'));
 app.use('/api', require('./Routes/reservevehicle.routes'));
 app.use('/api', require('./Routes/notification.routes'));
+app.use('/api', require('./Routes/views.routes'));
 
 
 const port = 9000 || process.env.port;

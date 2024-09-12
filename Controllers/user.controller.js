@@ -101,6 +101,7 @@ exports.createUser = async (req, res) => {
       role,
       phone,
     };
+console.log(find_role_client, "find_role_clientfind_role_client");
 
     if (
       find_role_client.id === parseInt(role) ||

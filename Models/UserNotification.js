@@ -22,7 +22,7 @@ const UserNotification = sequelize.define("Subcription", {
 });
 UserNotification.sync()
   .then(() => {
-    console.log("UserNotification model  created successfully");
+    // console.log("UserNotification model  created successfully");
   })
   .catch((err) => {
     console.log("fail to create model", err);

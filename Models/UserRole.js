@@ -27,7 +27,7 @@ const UserRole = sequelize.define(
 UserRole
   .sync()
   .then(() => {
-    console.log("UserRole created successfully");
+    // console.log("UserRole created successfully");
   })
   .catch((err) => {
     console.log("fail to create model", err);

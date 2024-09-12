@@ -146,9 +146,7 @@ const User = sequelize.define("User", {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
-  appFee: {
-    type: DataTypes.DECIMAL,
-  },
+  balance: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   subscription: {
     type: DataTypes.BOOLEAN,
     default: false,
@@ -158,7 +156,7 @@ const User = sequelize.define("User", {
 
 User.sync()
   .then(() => {
-    console.log("role created successfully");
+    // console.log("role created successfully");
   })
   .catch((err) => {
     console.log("fail to create model", err);

@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../DbConfig/db.connect");
-const user = require("./user");
-const { isLowercase } = require("validator");
+
 const url = require("../Front_url/image_url_front");
+
 
 const vehicle = sequelize.define(
   "vehicle",
@@ -106,7 +106,11 @@ const vehicle = sequelize.define(
   },
   { tableName: "vehicle" }
 );
-
+// vehicle.belongsToMany(Reservation, {
+//   through: ReserveVehicle,
+//   as: "reservations",
+//   foreignKey: "reservationId",
+// });
 vehicle
   .sync()
   .then(() => {

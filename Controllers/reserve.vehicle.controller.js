@@ -11,179 +11,188 @@ const Vehicle = require("../Models/vehicle");
 const Ride = require("../Models/rides.");
 const e = require("express");
 const notification = require("../OtherUsefulFiles/notification");
+const UserSubscription = require("../Models/UserSubscription");
+const Reservationtypes = require("../Models/reservationtypes");
+const reservationNotification = require("../OtherUsefulFiles/reservation.notification");
+const { count } = require("mathjs");
 //reserve a vehicle
+// Reserve a vehicle
 exports.reserveVehicle = async (req, res) => {
-  const userObj = req.user;
+  try {
+    const userObj = req.user;
 
-  const {
-    pickup_point,
-    destination,
-    reservation_type,
-    advance_pickup_point,
-    advance_destination,
-    date,
-    time,
-    number_of_seats,
-  } = req.body;
-  const vehicle_id = req.params.vehicle_id;
+    const {
+      pickup_point,
+      destination,
+      reservation_type,
+      advance_pickup_point,
+      advance_destination,
+      date,
+      time,
+      number_of_seats,
+    } = req.body;
+    
+    const vehicle_id = req.params.vehicle_id;
+    const reservation_id = req.params.reservation_id;
 
-  const reservation_id = req.params.reservation_id;
+    // Step 1: Validate if the vehicle exists
+    const vehicle = await Vehicle.findOne({ where: { id: vehicle_id } });
+    if (!vehicle) {
+      return res.status(404).json({ msg: "Vehicle not found" });
+    }
 
-  //find the object with name role
-  const role_driver = await Role.findOne({where: {name:"driver"}})
+    // Step 2: Fetch driver role
+    const role_driver = await Role.findOne({ where: { name: "driver" } });
+    if (!role_driver) {
+      return res.status(500).json({ msg: "Role Driver not found" });
+    }
 
-  
-  const conformed_drivers = await User.findAll({
-    where: {
-      [Op.and]: {
-        role: role_driver.id,
-        documentStatus: "approved",
-        subscription: true,
+    // Step 3: Fetch available drivers with approved documents and active subscription
+    const conformed_drivers = await User.findAll({
+      where: {
+        [Op.and]: {
+          role: role_driver.id,
+          documentStatus: "approved",
+          subscription: true,
+        },
       },
-    },
-  });
-  
-  // const get_vehicle_type = await Ride.findOne(
-  //   { where: { id: vehicle_id } },
-  //   { attributes: ["name"] }
-  // );
-
-  // const user_details = await User.findOne({ where: { id: userObj.id } });
-  if (empty(reservation_type)) {
-    return res
-      .status(400)
-      .json({ msg: "What type of reservation do you prefer" });
-  }
-
-  if (reservation_type === "instant") {
-    if (empty(pickup_point)) {
-      return res.status(400).json({ msg: "Please enter your pickup point" });
-    } else if (empty(destination)) {
-      return res.status(400).json({ msg: "Please enter your destination" });
-    }
-    await ReserveVehicle.create({
-      reservationId: reservation_id,
-      vehicleId: vehicle_id,
-      pickUpPoint: pickup_point,
-      destination: destination,
-      numberOfSeats: number_of_seats,
-      reservationtype: reservation_type,
     });
 
-    if (conformed_drivers) {
+    if (!reservation_type) {
+      return res.status(400).json({ msg: "What type of reservation do you prefer?" });
+    }
 
+    // Handle instant reservation
+    if (reservation_type === "instant") {
+      if (!pickup_point) {
+        return res.status(400).json({ msg: "Please enter your pickup point" });
+      }
+      if (!destination) {
+        return res.status(400).json({ msg: "Please enter your destination" });
+      }
+
+      // Create reservation
+      const reservationObj = await ReserveVehicle.create({
+        reservationId: reservation_id,
+        vehicleId: vehicle_id,  // Using validated vehicleId
+        pickUpPoint: pickup_point,
+        destination: destination,
+        numberOfSeats: number_of_seats,
+        reservationtype: reservation_type,
+        date: new Date(),
+      });
+
+      // Notify drivers and handle response
+      await notifyDrivers(reservationObj, conformed_drivers, userObj, reservation_id);
       
-      const reservation_details = await Reservation.findOne({
-        where: { [Op.and]: { id: reservation_id, userId: userObj.id } },
+      return res.status(201).json({
+        msg: "Request created successfully but still pending.... you will receive a reply shortly",
       });
 
-
-      if (reservation_details) {
-  
-
-        conformed_drivers.forEach(async (driver) => {
-          
-          if (
-            await Vehicle.findOne({
-              where: {
-                [Op.and]: {
-                  owner: driver.id,
-                  vehicleType: get_vehicle_type.name,
-                },
-              },
-            })
-          ) {
-
-
-            notification(driver);
-       
-            
-          }
-        });
-        return res.status(201).json({
-          msg: "Request created successfully but still pending.... you will recieve a reply shortly",
-        });
-      } else {
-        return res.status(201).json({
-          msg: "Your request encounted some problems please try again later",
-        });
+    } else if (reservation_type === "advance") {
+   
+      if (!advance_pickup_point) {
+        return res.status(400).json({ msg: "Please enter your pickup point" });
       }
-    } else {
-      return res.status(404).json({
-        msg: "No Driver available at the moment",
-      });
-    }
-  } else if (reservation_type === "advance") {
-    if (empty(advance_pickup_point)) {
-      return res.status(400).json({ msg: "Please enter your pickup point" });
-    } else if (empty(advance_destination)) {
-      return res.status(400).json({ msg: "Please enter your destination" });
-    } else if (empty(date) || empty(time)) {
-      return res
-        .status(400)
-        .json({ msg: "Please specify a date and time for this reservation" });
-    }
-
-    // Convert time to 24-hour format if needed
-    const [hours, minutes] = time.split(":");
-    let formattedTime;
-    if (time.includes("PM") && hours < 12) {
-      formattedTime = `${parseInt(hours) + 12}:${minutes}`;
-    } else if (time.includes("AM") && hours == 12) {
-      formattedTime = `00:${minutes}`;
-    } else {
-      formattedTime = `${hours}:${minutes}`;
-    }
-
-    const new_reservation = await ReserveVehicle.create({
-      reservationId: reservation_id,
-      vehicleId: vehicle_id,
-      pickUpPoint: advance_pickup_point,
-      destination: advance_destination,
-      numberOfSeats: number_of_seats,
-      reservationtype: reservation_type,
-      timeOfService: formattedTime,
-      executionDate: date,
-    });
-
-    if (conformed_drivers) {
-      const reservation_details = await Reservation.findOne({
-        where: { [Op.and]: { id: reservation_id, userId: userObj.id } },
-      });
-      if (reservation_details) {
-        conformed_drivers.forEach(async (driver) => {
-          const vehicle = await Vehicle.findOne({
-            where: {
-              [Op.and]: {
-                owner: driver.id,
-                vehicleType: get_vehicle_type.name,
-              },
-            },
-          });
-          if (vehicle) {
-            SendPushNotificationToDriver(
-              new_reservation.destination,
-              new_reservation.pickUpPoint,
-              new_reservation.executionDate,
-              new_reservation.timeOfService,
-              user_details.name,
-              user_details.surname,
-              driver.id
-            );
-          }
-        });
+      if (!advance_destination) {
+        return res.status(400).json({ msg: "Please enter your destination" });
       }
+      if (!date || !time) {
+        return res.status(400).json({ msg: "Please specify a date and time for this reservation" });
+      }
+
+      // Convert time to 24-hour format
+      const formattedTime = convertTo24HourFormat(time);
+
+      const new_reservation = await ReserveVehicle.create({
+        reservationId: reservation_id,
+        vehicleId: vehicle_id,  // Using validated vehicleId
+        pickUpPoint: advance_pickup_point,
+        destination: advance_destination,
+        numberOfSeats: number_of_seats,
+        reservationtype: reservation_type,
+        timeOfService: formattedTime,
+        executionDate: date,
+      });
+
+      await notifyDrivers(new_reservation, conformed_drivers, userObj, reservation_id);
+      
       return res.status(201).json({
         msg: "Request created successfully but still pending.... you will receive a reply shortly",
       });
     } else {
-      return res.status(201).json({
-        msg: "Your request encounted some problems please try again later",
-      });
+      return res.status(400).json({ msg: "Invalid reservation type" });
     }
-  } else {
-    return res.status(404).json({
-      msg: "No Driver available at the moment",
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "An error occurred" });
+  }
+};
+
+
+const convertTo24HourFormat = (time) => {
+  const [hours, minutes] = time.split(":");
+  return time.includes("PM") && hours < 12
+    ? `${parseInt(hours) + 12}:${minutes}`
+    : time.includes("AM") && hours == 12
+    ? `00:${minutes}`
+    : `${hours}:${minutes}`;
+};
+
+// Helper function to notify drivers
+const notifyDrivers = async (reservationObj, conformed_drivers, userObj, ) => {
+  for (const driver_sub of conformed_drivers) {
+    const driver_sub_list = await UserSubscription.findOne({
+      where: { userId: driver_sub.id },
     });
+
+    const vehicle = await Vehicle.findOne({
+      where: {
+        owner: driver_sub.id,
+        vehicleType: reservationObj.vehicleId,  // Fetching vehicle type
+      },
+    });
+
+    if (vehicle) {
+      const userInfo = await User.findOne({
+        where: { id: userObj.id },
+      });
+
+      await reservationNotification(reservationObj, userInfo, driver_sub.id);
+    }
+  }
+};
+
+
+//view reservation details
+
+exports.viewPendingReservation = async (req, res) => {
+  const userObj = req.user;
+
+  try {
+    const pendingBookings = await Reservation.findAll({
+      where: {
+        [Op.and]: {
+          bookingStatus: false,
+          userId: userObj.id,
+        },
+      },
+      include: {
+        model: Vehicle, as:"vehicle",
+        through: { model: ReserveVehicle },
+        // attributes: [
+        //   "id",
+        //   "plateNumber",
+        //   "vehicleModel",
+        //   "vehicleMark",
+        //   "vehicleType",
+        // ],
+      },
+    });
+
+    res.json(pendingBookings);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
