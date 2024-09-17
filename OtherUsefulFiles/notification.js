@@ -7,7 +7,7 @@ const notification = async (driver, req, res) => {
   
       const newNotification = await Notification.create({
         subject: subject,
-        userId: driver.id,
+        driverId:drid,
         content: content,
       });
       console.error( "Notification sent successfully", newNotification);

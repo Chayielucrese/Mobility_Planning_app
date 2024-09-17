@@ -18,6 +18,7 @@
     "node-gcm": "^1.1.4",
     "nodemailer": "^6.9.14",
     "nodemon": "^3.1.4",
+    "opencage-api-client": "^1.0.7",
     "path": "^0.12.7",
     "php-in-js": "^1.0.6",
     "sequelize": "^6.37.3",

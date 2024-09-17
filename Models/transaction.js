@@ -4,7 +4,7 @@ const sequelize = require("../DbConfig/db.connect");
 const Transaction = sequelize.define("Transaction", {
   phone: { type: DataTypes.STRING(10), allowNull: false },
   ref: { type: DataTypes.STRING(35), allowNull: true },
-  amount: { type: DataTypes.FLOAT, allowNull: true },
+  amount: { type: DataTypes.INTEGER, allowNull: true, defaultValue: 0 },
   fee: { type: DataTypes.FLOAT, allowNull: false, defaultValue: 0 },
   type: { type: DataTypes.ENUM('credit', 'debit', 'transfert'), allowNull: false },
   status: { type: DataTypes.BOOLEAN, allowNull: false },

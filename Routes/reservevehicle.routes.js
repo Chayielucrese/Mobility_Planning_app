@@ -4,7 +4,7 @@ const checkAuthorization = require('../Middleware/check.auth')
 const checkRole = require('../Middleware/role.auth')
 const router = express.Router()
 
-router.post('/reserveVehicle/:vehicle_id/:reservation_id',  checkAuthorization,checkRole(2), reservevehicleCtrl.reserveVehicle)
+router.post('/reserveVehicle/:reservation_id/:vehicle_id',  checkAuthorization,checkRole(2), reservevehicleCtrl.reserveVehicle)
 
 //view reserved vehicles
 

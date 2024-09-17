@@ -21,6 +21,10 @@ const ReserveVehicle = sequelize.define("ReserveVehicle", {
   },
   pickUpPoint: { type: DataTypes.STRING, allowNull: false },
   destination: { type: DataTypes.STRING, allowNull: false },
+  pickUpPointLatitude: { type: DataTypes.FLOAT },   // Separate field for latitude
+  pickUpPointLongitude: { type: DataTypes.FLOAT },  // Separate field for longitude
+  destinationLatitude: { type: DataTypes.FLOAT },   // Separate field for destination latitude
+  destinationLongitude: { type: DataTypes.FLOAT },
   reservedVehicleFee: { type: DataTypes.FLOAT },
   numberOfSeats: { type: DataTypes.INTEGER, defaultValue: 1 },
   seatNumber: { type: DataTypes.INTEGER }, // Fixed typo

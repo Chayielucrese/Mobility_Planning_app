@@ -1,10 +1,13 @@
+const { empty } = require('php-in-js/modules/types')
 const  Transaction = require('../Models/transaction')
+const User = require('../Models/user')
+const monetbil = require('../services/monetbil')
 /**
  * Check payement, create transaction in database and increment user balance
  * 
  * @internal
  */
-const _processTransaction = async (ref, transaction_id) => {
+const _processTransaction = async (ref, transaction_id, res) => {
     if (empty(transaction_id) || empty(ref)) {
         return 'GONE'
     }
@@ -56,6 +59,8 @@ const _processTransaction = async (ref, transaction_id) => {
     if (status == 1) {
         // if transaction if successful, increment balance of user
         await user.increment({ balance: amount - payment.fee })
+    
+        
     }
     
     monetbil.removeRef(ref)

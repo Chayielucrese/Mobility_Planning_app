@@ -4,6 +4,7 @@ const bodyparser = require("body-parser");
 const sequelize = require("./DbConfig/db.connect");
 const path = require("path");
 const cors = require('cors');
+
 //importing my database connection
 require("./DbConfig/db.connect");
 
@@ -35,7 +36,7 @@ app.use(
     verify: (req, res, buf) => {
       req.rawBody = buf.toString();
     },
-    limit: "50mb",
+    limit: "70mb",
   })
 );
 
@@ -54,6 +55,7 @@ app.use('/api', require('./Routes/reservation.routes'));
 app.use('/api', require('./Routes/reservevehicle.routes'));
 app.use('/api', require('./Routes/notification.routes'));
 app.use('/api', require('./Routes/views.routes'));
+app.use('/api', require('./Routes/geocodeing.routes'));
 
 
 const port = 9000 || process.env.port;

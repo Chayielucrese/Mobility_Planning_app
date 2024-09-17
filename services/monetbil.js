@@ -57,8 +57,7 @@ module.exports = new class {
 			payment_ref: ref,
 			return_url : `${baseUrl}/api/transaction/result`,
 			notify_url : `${baseUrl}/api/transaction/notify/${ref}`,
-		   logo       :  "https://github.com/Chayielucrese/mobility_planning_version4/blob/master/lib/logo/etravel.png?raw=true"// Logo URL
-
+			// logo       : '',
         })
 
         let payment_url = '';

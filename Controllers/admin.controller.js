@@ -5,8 +5,8 @@ const { Op } = require("sequelize");
 const Vehicle = require("../Models/vehicle");
 const ReservedVehicle = require("../Models/ReserveVehicle");
 const Reservation = require("../Models/reservation");
-const sendMessage = require('../index');
-const notification = require("../OtherUsefulFiles/notification");
+const sendMessage = require("../index");
+const Notification = require("../Models/Notification");
 
 exports.getAllDriversWithUnverifiedDocuments = async (req, res) => {
   try {
@@ -98,10 +98,11 @@ exports.updateDucmentStatus = async (req, res) => {
       .status(400)
       .json({ msg: "your response must either be approved ot rejected" });
   }
-  const driverObj = await User.findOne({id: driver_id})
+  const driverObj = await User.findOne({ where:{id: driver_id} });
 
+  console.log(driverObj, "driverObj", driver_id);
+  
   const admin_role = await Role.findOne({ where: { name: "admin" } });
-  console.log(role_id, "role id");
 
   if (admin_role.id === parseInt(role_id)) {
     await User.update(
@@ -112,11 +113,17 @@ exports.updateDucmentStatus = async (req, res) => {
         where: { id: driver_id },
       }
     );
- notification(driverObj)
+    const subject = `eTravel Document Updates`;
+    const content = `Congratulations ${driverObj.name} ${driverObj.surname}, your documents have been verified and approved successfully.`;
 
-    return res
-      .status(200)
-      .json({ msg: `Driver ${doc_new_status} successfully` });
+    const newNotification = await Notification.create({
+      subject: subject,
+      driverId: driver_id,
+      content: content,
+      date: new Date(),
+    });
+
+    return res.status(201).json({ msg: newNotification });
   }
   return res.status(200).json({ msg: "Error while updating driver" });
 };

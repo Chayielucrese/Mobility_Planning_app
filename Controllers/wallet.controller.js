@@ -74,26 +74,28 @@ exports.recharge = async(req, res) => {
   if (empty(amount) || !parseInt(amount)) {
       res.status(400).json({msg:'Please enter a valid amount to charge'})
   }
-  if (amount < 100) {
+  if (amount < 2) {
       res.status(400).json({msg:'You cannot charge less than 100 FCFA'})
   }
   console.log("can't enter here");
 
   try {
-      const payment_url = await monetbil.initPayment({
-          amount, 
-          fee: Math.ceil(0.01 * amount), 
-          userId: req.user.id
-      })
 
-      return res.status(201).json({msg:'Payment initiated successfully',  payment_url })
-
-      } catch (e) {
-      console.log({ e })
-      
-      return res.status(500).json({msg: e.message || 'An error occurred while initing payment'})
+    const payment_url = await monetbil.initPayment({
+      amount,
+      fee: Math.ceil(0.01 * amount),
+      userId: req.user.id,
+    });
+    console.log("Entered successfully");
+    return res.status(201).json({ msg: 'Payment initiated successfully', payment_url });
+  } catch (e) {
+    console.error("Error occurred:", e);
+    return res.status(500).json({ msg: e.message || 'An error occurred while initiating payment' });
   }
-}
+      
+      
+  }
+
 
 
 exports.result = async(req, res) => {
@@ -124,10 +126,10 @@ exports.notify = async (req, res) => {
    const result = await _processTransaction(ref, transaction_id)
    
    switch (result) {
-       case 'GONE': return res.gone()
-       case 'FOUND': return res.found()
-       case 'FORBIDDEN': return res.forbidden()
-       case 'UNAUTHORIZED': return res.unauthorized()
+       case 'GONE': return res.status(401).json("gone")
+       case 'FOUND': return res.status(200).json("found")
+       case 'FORBIDDEN': return res.status(403).json("Forbidden")
+       case 'UNAUTHORIZED': return res.status(403).json("Unauthorized")
        default: return res.ok();
    }
 }

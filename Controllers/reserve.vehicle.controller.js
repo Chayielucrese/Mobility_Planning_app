@@ -5,17 +5,14 @@ const {
   SendPushNotificationToDriver,
 } = require("../pushNotification/DriverNotification");
 const Reservation = require("../Models/reservation");
-const { Op, where, BOOLEAN } = require("sequelize");
+const { Op } = require("sequelize");
 const Role = require("../Models/role");
 const Vehicle = require("../Models/vehicle");
-const Ride = require("../Models/rides.");
-const e = require("express");
-const notification = require("../OtherUsefulFiles/notification");
-const UserSubscription = require("../Models/UserSubscription");
-const Reservationtypes = require("../Models/reservationtypes");
+
 const reservationNotification = require("../OtherUsefulFiles/reservation.notification");
-const { count } = require("mathjs");
-//reserve a vehicle
+const { geocodeAddressToCoordinates } = require("./Geocoding.controller");
+const UserSubscription = require("../Models/UserSubscription");
+
 // Reserve a vehicle
 exports.reserveVehicle = async (req, res) => {
   try {
@@ -31,9 +28,10 @@ exports.reserveVehicle = async (req, res) => {
       time,
       number_of_seats,
     } = req.body;
-    
+
     const vehicle_id = req.params.vehicle_id;
     const reservation_id = req.params.reservation_id;
+    console.log(vehicle_id, "vehicle_idvehicle_id", reservation_id);
 
     // Step 1: Validate if the vehicle exists
     const vehicle = await Vehicle.findOne({ where: { id: vehicle_id } });
@@ -59,7 +57,9 @@ exports.reserveVehicle = async (req, res) => {
     });
 
     if (!reservation_type) {
-      return res.status(400).json({ msg: "What type of reservation do you prefer?" });
+      return res
+        .status(400)
+        .json({ msg: "What type of reservation do you prefer?" });
     }
 
     // Handle instant reservation
@@ -71,26 +71,44 @@ exports.reserveVehicle = async (req, res) => {
         return res.status(400).json({ msg: "Please enter your destination" });
       }
 
-      // Create reservation
+      const pickUpCoordinates = await geocodeAddressToCoordinates(pickup_point);
+      const destinationCoordinates = await geocodeAddressToCoordinates(
+        destination
+      );
+      console.log(pickUpCoordinates, "coordinates");
+      if (!pickUpCoordinates || !destinationCoordinates) {
+        return res.status(500).json({ msg: "Geocoding failed, could not retrieve coordinates" });
+      }
+  
+      const { lat: pickUpLat, lng: pickUpLng } = pickUpCoordinates;
+      const { lat: destLat, lng: destLng } = destinationCoordinates;
+  
+ 
       const reservationObj = await ReserveVehicle.create({
         reservationId: reservation_id,
-        vehicleId: vehicle_id,  // Using validated vehicleId
+        vehicleId: vehicle_id,
         pickUpPoint: pickup_point,
+        pickUpPointLatitude: pickUpLat,
+        pickUpPointLongitude: pickUpLng,
         destination: destination,
+        destinationLatitude: destLat,
+        destinationLongitude: destLng,
         numberOfSeats: number_of_seats,
         reservationtype: reservation_type,
         date: new Date(),
       });
-
       // Notify drivers and handle response
-      await notifyDrivers(reservationObj, conformed_drivers, userObj, reservation_id);
-      
+      await notifyDrivers(
+        reservationObj,
+        conformed_drivers,
+        userObj,
+        reservation_id
+      );
+
       return res.status(201).json({
         msg: "Request created successfully but still pending.... you will receive a reply shortly",
       });
-
     } else if (reservation_type === "advance") {
-   
       if (!advance_pickup_point) {
         return res.status(400).json({ msg: "Please enter your pickup point" });
       }
@@ -98,7 +116,9 @@ exports.reserveVehicle = async (req, res) => {
         return res.status(400).json({ msg: "Please enter your destination" });
       }
       if (!date || !time) {
-        return res.status(400).json({ msg: "Please specify a date and time for this reservation" });
+        return res
+          .status(400)
+          .json({ msg: "Please specify a date and time for this reservation" });
       }
 
       // Convert time to 24-hour format
@@ -106,7 +126,7 @@ exports.reserveVehicle = async (req, res) => {
 
       const new_reservation = await ReserveVehicle.create({
         reservationId: reservation_id,
-        vehicleId: vehicle_id,  // Using validated vehicleId
+        vehicleId: vehicle_id, // Using validated vehicleId
         pickUpPoint: advance_pickup_point,
         destination: advance_destination,
         numberOfSeats: number_of_seats,
@@ -115,8 +135,13 @@ exports.reserveVehicle = async (req, res) => {
         executionDate: date,
       });
 
-      await notifyDrivers(new_reservation, conformed_drivers, userObj, reservation_id);
-      
+      await notifyDrivers(
+        new_reservation,
+        conformed_drivers,
+        userObj,
+        reservation_id
+      );
+
       return res.status(201).json({
         msg: "Request created successfully but still pending.... you will receive a reply shortly",
       });
@@ -129,7 +154,6 @@ exports.reserveVehicle = async (req, res) => {
   }
 };
 
-
 const convertTo24HourFormat = (time) => {
   const [hours, minutes] = time.split(":");
   return time.includes("PM") && hours < 12
@@ -140,7 +164,7 @@ const convertTo24HourFormat = (time) => {
 };
 
 // Helper function to notify drivers
-const notifyDrivers = async (reservationObj, conformed_drivers, userObj, ) => {
+const notifyDrivers = async (reservationObj, conformed_drivers, userObj) => {
   for (const driver_sub of conformed_drivers) {
     const driver_sub_list = await UserSubscription.findOne({
       where: { userId: driver_sub.id },
@@ -149,7 +173,7 @@ const notifyDrivers = async (reservationObj, conformed_drivers, userObj, ) => {
     const vehicle = await Vehicle.findOne({
       where: {
         owner: driver_sub.id,
-        vehicleType: reservationObj.vehicleId,  // Fetching vehicle type
+        vehicleType: reservationObj.vehicleId, // Fetching vehicle type
       },
     });
 
@@ -162,7 +186,6 @@ const notifyDrivers = async (reservationObj, conformed_drivers, userObj, ) => {
     }
   }
 };
-
 
 //view reservation details
 
@@ -178,7 +201,8 @@ exports.viewPendingReservation = async (req, res) => {
         },
       },
       include: {
-        model: Vehicle, as:"vehicle",
+        model: Vehicle,
+        as: "vehicle",
         through: { model: ReserveVehicle },
         // attributes: [
         //   "id",

@@ -8,7 +8,7 @@ const Reservation = sequelize.define("Reservation", {
   bookingStatus: { type: DataTypes.BOOLEAN, defaultValue: false },
   bookingTotalCost: { type: DataTypes.FLOAT },
   userId: { type: DataTypes.INTEGER, allowNull: false },
-  paymentStatus: { type: DataTypes.BOOLEAN, defaultValue: false },
+  paymentStatus: { type: DataTypes.ENUM("pending", "cancel", "complete"), defaultValue: "pending" },
   paymentMode: {
     type: DataTypes.ENUM("wallet", "cash"),
     allowNull: false,

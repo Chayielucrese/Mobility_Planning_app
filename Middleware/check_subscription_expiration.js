@@ -1,18 +1,22 @@
+const { Op } = require("sequelize");
 const UserSubscription = require("../Models/UserSubscription");
+const { subscribe } = require("../Routes/user.routes.js");
 
 // Middleware or a scheduled job to check if a subscription has expired
-exports.checkSubscriptionValidity = async (req, res, next) => {
+const checkSubscriptionValidity = async (req, res, next) => {
     const user_id = req.user
+    console.log("helloooo");
   
     try {
-      // Find the active subscription for the user
+   
       const subscription = await UserSubscription.findOne({
         where: {
           userId: user_id.id,
           endDate: { [Op.gt]: new Date() }, // Check if the end date is greater than the current date
         },
       });
-  
+      
+ 
       if (!subscription) {
         return res.status(400).json({
           msg: "You do not have an active subscription.",
@@ -26,4 +30,4 @@ exports.checkSubscriptionValidity = async (req, res, next) => {
       });
     }
   };
-  
+  module.exports = checkSubscriptionValidity
