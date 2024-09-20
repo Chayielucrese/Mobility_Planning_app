@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../DbConfig/db.connect");
+const User = require("./user");
 
 const Transaction = sequelize.define("Transaction", {
   phone: { type: DataTypes.STRING(10), allowNull: false },
@@ -15,6 +16,14 @@ const Transaction = sequelize.define("Transaction", {
   transaction_date: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
   user_agent: { type: DataTypes.STRING, allowNull: true },
   ip_address: { type: DataTypes.STRING(15), allowNull: true },
+  userId: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: User,
+      key: "id",
+    }, 
+    allowNull: true
+  },
 });
 Transaction.sync()
   .then(() => {})

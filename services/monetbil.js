@@ -6,6 +6,7 @@ const { date } = require("php-in-js/modules/datetime")
 
 const { baseUrl } = require("../config/env")
 const { MONETBIL_SERVICE_KEY, MONETBIL_SERVICE_SECRET } = require("../config/constants")
+const { empty, is_numeric } = require("php-in-js/modules/types")
 
 module.exports = new class {
     /**
@@ -56,7 +57,7 @@ module.exports = new class {
 			currency   : 'XAF',
 			payment_ref: ref,
 			return_url : `${baseUrl}/api/transaction/result`,
-			notify_url : `${baseUrl}/api/transaction/notify/${ref}`,
+			// notify_url : `${baseUrl}/api/transaction/notify/${ref}`,
 			// logo       : '',
         })
 
@@ -98,22 +99,35 @@ module.exports = new class {
 	 * 
 	 * @param {{amount: int, phone: string}}  data
      * 
-     * @return {{[key: string]: string}}
+     * @return {Promise<{[key: string]: string}>}
 	 */
     async send(data) {
-        if (validator.isEmpty(data.amount) || !validator.isNumeric(data.amount)) {
+        if (empty(data.amount) || !is_numeric (data.amount)) {
 			throw new Error('Transaction amount not defined')
 		}
-		if (validator.isEmpty(data.phone)) {
+		if (empty(data.phone)) {
 			throw new Error('Phone number not defined');
 		}
+
+        console.log({ 
+			service_key      : MONETBIL_SERVICE_KEY,
+			service_secret   : MONETBIL_SERVICE_SECRET,
+			// processing_number: scl_generateKeys(15, 3),
+			phonenumber      : `237${String(data.phone).replace(/^237/, '')}`,
+			amount           : data.amount 
+        });
+        
 
         const { data: response } = await axios.post(this.endpoint_widrawal, { 
 			service_key      : MONETBIL_SERVICE_KEY,
 			service_secret   : MONETBIL_SERVICE_SECRET,
-			processing_number: scl_generateKeys(15, 3),
+			// processing_number: scl_generateKeys(15, 3),
 			phonenumber      : `237${String(data.phone).replace(/^237/, '')}`,
 			amount           : data.amount 
+        }, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
         })
 	
         return response

@@ -63,7 +63,7 @@ const _processTransaction = async (ref, transaction_id, res) => {
         
     }
     
-    monetbil.removeRef(ref)
+   // monetbil.removeRef(ref)
     
     return 'OK'
 }

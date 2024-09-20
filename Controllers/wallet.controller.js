@@ -100,9 +100,14 @@ exports.recharge = async(req, res) => {
 
 exports.result = async(req, res) => {
   const { payment_ref, status, message, transaction_id } = req.query
-      
+ 
+
+  if(!empty(payment_ref) && !empty(transaction_id)){
+    await _processTransaction(payment_ref, transaction_id)
+  }
+
   if (status === 'cancelled') {
-      monetbil.removeRef(payment_ref)
+      // monetbil.removeRef(payment_ref)
   }
 
   return res.render('transactions/result', { 

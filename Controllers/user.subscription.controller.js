@@ -42,12 +42,14 @@ exports.UserPerformsubscription = async (req, res) => {
     if (currentBalance >= subscriptionPrice) {
 
 
-      const widrawalFromSubscriptionWallet =  monetbil.send({
+      const widrawalFromSubscriptionWallet = await monetbil.send({
         amount : subscriptionPrice,
         phone: "678338191"
 
       })
-if(widrawalFromSubscriptionWallet){
+      console.log(widrawalFromSubscriptionWallet, "widrawalFromSubscriptionWallet");
+      
+if(widrawalFromSubscriptionWallet && widrawalFromSubscriptionWallet.success === true){
     const newSubscription = await UserSubscription.create({
         userId: userObj.id,
         subscriptionId: subscriptionId,
@@ -64,8 +66,8 @@ if(widrawalFromSubscriptionWallet){
         });
       }
 
-      await User.update({ balance: newBalance }, { where: { id: userObj.id } });
-
+      await userWallet.increment({ balance: - subscriptionPrice})
+      
       await User.update({ subscription: true }, { where: { id: userObj.id } });
       return res.status(201).json({
           msg: "Subscription successfully created. It is valid for 30 days.",
